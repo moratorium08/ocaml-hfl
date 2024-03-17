@@ -9,6 +9,19 @@ module S = struct
   module Hflz    = Hflz
 end
 
+module List = struct
+  include List
+  let enumurate xs =
+    List.zip_exn xs (List.init (List.length xs) ~f:(fun x -> x))
+end
+
+module Map = struct
+  include Map
+  let replace map ~key ~data =
+        let map = remove map key in
+        add_exn map ~key ~data
+end
+
 let log_src = Logs.Src.create ~doc:"Transform" "Trans"
 module Log = (val Logs.src_log log_src)
 
@@ -184,7 +197,6 @@ module Subst = struct
   end
 end
 
-(* TODO
 module Reduce = struct
   module Hfl = struct
     let rec beta : S.Hfl.t -> S.Hfl.t = function
@@ -219,24 +231,24 @@ module Reduce = struct
       | Abs(x, phi) -> Abs(x, beta phi)
       | phi -> phi
     let rec ones = 1 :: ones
-    module Scc(Key: Map.Key) = struct
-      module NodeSet = Set.Make'(Key)
-      module NodeMap = Map.Make'(Key)
+    module Scc(Key: Comparator.S) = struct
+      module NodeSet = Set.M(Key)
+      module NodeMap = Map.M(Key)
       type graph = NodeSet.t NodeMap.t
       let rg : graph -> graph = fun g ->
-        Map.fold g ~init:NodeMap.empty ~f:begin fun ~key ~data:set map ->
+        Map.fold g ~init:(Map.empty (module Key)) ~f:begin fun ~key ~data:set map ->
           let map' =
             if Map.mem map key
             then map
-            else Map.add_exn map ~key ~data:NodeSet.empty
+            else Map.add_exn map ~key ~data:(Set.empty (module Key))
           in
           Set.fold set ~init:map' ~f:begin fun map v ->
             let data =
               match Map.find map v with
               | Some s -> Set.add s key
-              | None   -> NodeSet.singleton key
+              | None   -> Set.singleton (module Key) key
             in
-            NodeMap.replace map ~key:v ~data
+            Map.replace map ~key:v ~data
           end
         end
       let rec dfs : graph -> NodeSet.t -> Key.t list -> graph * Key.t list =
@@ -258,7 +270,7 @@ module Reduce = struct
               end
       let scc g =
         let rG = rg g in
-        let map, vs = dfs g (NodeSet.of_list @@ Map.keys g) [] in
+        let map, vs = dfs g (Set.of_list (module Key) @@ Map.keys g) [] in
         let _, ls =
           List.fold vs ~init:(rG, []) ~f:begin fun (rg,ls) v ->
             let rg2, l = rdfs rg v [] in
@@ -277,13 +289,13 @@ module Reduce = struct
         in
         let module Scc = Scc(Id.Key) in
         let dep_graph : Scc.graph =
-          IdMap.of_alist_exn @@ List.map (main::rules) ~f:begin fun rule ->
+          Map.of_alist_exn (module Id.Key)  @@ List.map (main::rules) ~f:begin fun rule ->
             let id = rule.var in
             let dep =
               Hflz.fvs rule.body
               |> IdSet.filter ~f:begin fun x -> (* filter nonterminals *)
                   let c = String.get x.Id.name 0 in
-                  c == Char.uppercase_ascii c (* XXX ad hoc *)
+                  c == Char.uppercase c (* XXX ad hoc *)
                  end
             in Id.remove_ty id ,dep
           end
@@ -307,7 +319,7 @@ module Reduce = struct
             |> snd
             |> List.rev
             |> List.enumurate
-            |> IdMap.of_alist_exn
+            |> Map.of_alist_exn (module Id.Key)
           in
           List.sort inlinables ~compare:begin fun x y ->
             let value (z : 'a Hflz.hes_rule) =
@@ -322,7 +334,7 @@ module Reduce = struct
         end;
         let inline_map =
           let rules_in_map =
-            IdMap.of_alist_exn @@ List.map inlinables ~f:begin fun rule ->
+            Map.of_alist_exn (module Id.Key) @@ List.map inlinables ~f:begin fun rule ->
               Id.remove_ty rule.var, rule.body
             end
           in
@@ -345,6 +357,7 @@ module Reduce = struct
   end
 end
 
+(* TODO
 module Simplify = struct
   let hflz : 'a Hflz.t -> 'a Hflz.t =
     let rec is_trivially_true : 'a Hflz.t -> bool =
