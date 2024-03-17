@@ -1,0 +1,25 @@
+(lang dune 3.0)
+(using menhir 2.0)
+(name hfl)
+(generate_opam_files)
+(version 0.0.1)
+(source (github hopv/hfl))
+(license Apache-2.0)
+(authors "Ken Sakayori")
+(maintainers "sakayori@kb.is.s.u-tokyo.ac.jp")
+
+(package
+  (name hfl)
+  (synopsis "OCaml library for manipulaing HFL formulas")
+  ; (description "A longer description")
+  (depends
+    base
+    fmt
+    logs
+    menhir
+    menhirLib
+    ppx_compare
+    ppx_deriving
+    ppx_let
+   (ppx_sexp_conv (>= v0.16))
+ ))

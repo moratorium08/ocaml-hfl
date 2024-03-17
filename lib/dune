@@ -1,0 +1,12 @@
+(menhir
+ (flags --reference-graph --dump --explain --table --inspection)
+ (modules parser))
+(ocamllex
+ (modules lexer))
+
+(library
+ (name hfl)
+ (public_name hfl)
+ (libraries fmt logs menhirLib)
+ (preprocess (pps ppx_deriving.std ppx_compare ppx_sexp_conv)))
+(env (dev (flags (:standard -warn-error -A -w -3-26-27-33))))
