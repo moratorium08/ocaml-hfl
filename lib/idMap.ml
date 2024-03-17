@@ -26,3 +26,4 @@ let of_list : ('a Id.t * 'x) list -> 'x t =
   fun vxs -> Map.of_alist_exn (module Id.Key) @@ List.map ~f:(fun (v,x) -> (Id.remove_ty v, x)) vxs
 let to_alist = Map.to_alist
 let iter_keys = Map.iter_keys
+let map = Map.map
