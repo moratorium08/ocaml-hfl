@@ -97,9 +97,9 @@ module Typing = struct
       | TvInt | TvBool -> false
       | TvArrow(tv1, tv2) -> occur ~top:false r tv1 || occur ~top:false r tv2
       | TvRef(_, ({contents=None} as r')) ->
-          if r == r' && top then raise Alias else r == r'
+          if phys_equal r r' && top then raise Alias else phys_equal r r'
       | TvRef(_, ({contents=Some tv} as r')) ->
-          if r == r' && top then raise Alias else r == r' || occur ~top r tv
+          if phys_equal r r' && top then raise Alias else phys_equal r r' || occur ~top r tv
   type occur_check_result = [ `Ok | `Alias ]
   let occur_check r tv =
     try
@@ -134,7 +134,7 @@ module Typing = struct
       | TvBool, TvBool -> ()
       | TvArrow(tv11,tv12),  TvArrow(tv21,tv22) ->
           unify tv11 tv21; unify tv12 tv22
-      | TvRef (_,r1), TvRef (_,r2) when r1 == r2 ->
+      | TvRef (_,r1), TvRef (_,r2) when phys_equal r1 r2 ->
           Log.debug begin fun _ -> Print.pr "EQUAL %a == %a@."
             pp_hum_tyvar tv1
             pp_hum_tyvar tv2
