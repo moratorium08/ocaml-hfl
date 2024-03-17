@@ -66,8 +66,6 @@ let decompose_app =
   fun phi -> go phi []
 
 
-(* Should I make this as a functor ? *)
-(*
 let rec fvs = function
   | Var x          -> IdSet.singleton x
   | Bool _         -> IdSet.empty
@@ -80,5 +78,3 @@ let rec fvs = function
   | Pred (_,as')   -> IdSet.union_list @@ List.map as' ~f:begin fun a ->
                         IdSet.of_list @@ List.map ~f:Id.remove_ty @@ Arith.fvs a
                       end
-
-*)
