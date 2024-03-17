@@ -471,7 +471,6 @@ module Simplify = struct
     | phi -> phi
 end
 
-(* TODO
 module RemoveDisjunction = struct
   (* remove disjunction translator *)
   (**
@@ -584,13 +583,13 @@ module RemoveDisjunction = struct
       {rule with var}
 
   let f rules top = if check rules then
-    (Printf.printf "[REMOVE_DISJUNCTION]\n";
+    (* TODO Switch to Stdio or use the Logger? *)
+    (Stdlib.Printf.printf "[REMOVE_DISJUNCTION]\n";
     List.map ~f:(fun x -> x|>translate_hes_rule|>translate_aux top) rules)
   else
-    (Printf.printf "[NO_DISJUNCTION]\n"; rules)
-
+    (Stdlib.Printf.printf "[NO_DISJUNCTION]\n"; rules)
 end
-*)
+
 module Preprocess = struct
   (* gets hes_rule list. returns hes_rule list and toplevel name*)
   let translate_top top_rule = 
