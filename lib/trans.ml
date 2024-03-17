@@ -97,6 +97,7 @@ module Subst = struct
         | App(phi1,phi2) -> App(hflz env phi1, hflz env phi2)
         | Abs(x, t)      -> Abs(x, hflz (IdMap.remove env x) t)
         | Forall(x, t)   -> Forall(x, hflz (IdMap.remove env x) t)
+        | Exists(x, t)   -> Exists(x, hflz (IdMap.remove env x) t)
         | Arith a        -> Arith (arith env a)
         | Pred (p,as')   -> Pred(p, List.map ~f:(arith env) as')
         | Bool _         -> phi
@@ -388,6 +389,8 @@ module RemoveDisjunction = struct
       check_body in_disj x || check_body in_disj y
     | Hflz.Abs(_, y) -> check_body in_disj y
     | Hflz.Forall(_, y) -> check_body in_disj y
+    (* TODO better error reporting  *)
+    | Hflz.Exists(_) -> failwith "remove disjunction is only supported for nuHFL"
     | Hflz.App _ when in_disj -> true
     | Hflz.App (x, y) -> check_body in_disj x || check_body in_disj y
     | Hflz.Var x when in_disj -> begin
@@ -440,6 +443,8 @@ module RemoveDisjunction = struct
     | Forall(x, y) -> 
       let y' = translate_body y in
       Abs(k, Forall(x, App(y', ret_k_var)))
+    (* TODO better error reporting  *)
+    | Hflz.Exists(_) -> failwith "remove disjunction is only supported for nuHFL"
     | App(x, y) -> 
       let x' = translate_body x in
       let y' = translate_body y in

@@ -13,6 +13,7 @@ type raw_hflz =
   | Op   of Arith.op * raw_hflz list
   | Pred of Formula.pred * raw_hflz list
   | Forall of string * raw_hflz
+  | Exists of string * raw_hflz
   [@@deriving eq,ord,show,iter,map,fold,sexp]
 type hes_rule =
   { var  : string
@@ -29,6 +30,7 @@ let mk_bool b    = Bool b
 let mk_var x     = Var x
 let mk_op op as' = Op(op,as')
 let mk_forall var body = Forall(var, body)
+let mk_exists var body = Exists(var, body)
 
 let mk_ands = function
   | [] -> Bool true
@@ -282,6 +284,15 @@ module Typing = struct
             self#add_ty_env x tv_arg;
             let psi = self#term id_env psi TvBool in
             Forall(lift_arg x, psi)
+        | Exists(name, psi) ->
+            let id = new_id() in
+            let x = Id.{ name; id; ty = () } in
+            let tv_arg = new_tyvar() in
+            unify tv TvBool;
+            let id_env = Map.replace id_env ~key:name ~data:id in
+            self#add_ty_env x tv_arg;
+            let psi = self#term id_env psi TvBool in
+            Exists(lift_arg x, psi)
         | App (psi1, psi2) ->
             let tv_arg = new_tyvar() in
             let psi1 = self#term id_env psi1 (TvArrow(tv_arg, tv)) in
@@ -383,6 +394,7 @@ module Typing = struct
       | App (psi1, psi2) -> App (self#term psi1, self#term psi2)
       | Abs (x, psi)     -> Abs (self#arg_id x, self#term psi)
       | Forall(x, psi)   -> Forall (self#arg_id x, self#term psi)
+      | Exists(x, psi)   -> Exists (self#arg_id x, self#term psi)
       | Arith a          -> Arith a
       | Pred (pred,as')  -> Pred(pred, as')
 
@@ -455,6 +467,9 @@ let rename_ty_body : simple_ty Hflz.hes -> simple_ty Hflz.hes =
         | Forall ({ty=TySigma ty;_} as x, psi) ->
             Forall (x, term (IdMap.add env x ty) psi)
         | Forall ({ty=TyInt;_} as x, psi) -> Forall (x, term env psi)
+        | Exists ({ty=TySigma ty;_} as x, psi) ->
+            Exists (x, term (IdMap.add env x ty) psi)
+        | Exists ({ty=TyInt;_} as x, psi) -> Exists (x, term env psi)
     in
     let rule : simple_ty IdMap.t
             -> simple_ty Hflz.hes_rule
