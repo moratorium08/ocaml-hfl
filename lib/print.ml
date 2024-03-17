@@ -3,6 +3,8 @@ open Base
 include Fmt
 include Format
 
+let (^^) = Stdlib.(^^)
+
 let semicolon : unit Fmt.t = fun ppf () -> string ppf ";"
 
 let list_comma : 'a Fmt.t -> 'a list Fmt.t =
