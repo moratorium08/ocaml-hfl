@@ -357,7 +357,6 @@ module Reduce = struct
   end
 end
 
-(* TODO
 module Simplify = struct
   let hflz : 'a Hflz.t -> 'a Hflz.t =
     let rec is_trivially_true : 'a Hflz.t -> bool =
@@ -379,12 +378,12 @@ module Simplify = struct
       | And(phi1, phi2) ->
           let phi1 = go phi1 in
           let phi2 = go phi2 in
-          let phis = List.filter ~f:Fn.(not <<< is_trivially_true) [phi1;phi2] in
+          let phis = List.filter ~f:(fun x -> not (is_trivially_true x)) [phi1;phi2] in
           Hflz.mk_ands phis
       | Or (phi1, phi2) ->
           let phi1 = go phi1 in
           let phi2 = go phi2 in
-          let phis = List.filter ~f:Fn.(not <<< is_trivially_false) [phi1;phi2] in
+          let phis = List.filter ~f:(fun x -> not (is_trivially_false x)) [phi1;phi2] in
           Hflz.mk_ors phis
       | Abs(x,phi)     -> Abs(x, go phi)
       | App(phi1,phi2) -> App(go phi1, go phi2)
@@ -415,13 +414,13 @@ module Simplify = struct
     in
     fun ?(force=false) phi ->
       match Reduce.Hfl.beta_eta phi with
-      | And(phis, k) when k = `Inserted || force ->
+      | And(phis, k) when Poly.(=) k `Inserted || force ->
           let phis = List.map ~f:hfl phis in
-          let phis = List.filter ~f:Fn.(not <<< is_trivially_true) phis in
+          let phis = List.filter ~f:(fun x ->  not (is_trivially_true x)) phis in
           Hfl_syntax.mk_ands phis ~kind:k
-      | Or(phis, k) when k = `Inserted || force ->
+      | Or(phis, k) when Poly.(=) k  `Inserted || force ->
           let phis = List.map ~f:hfl phis in
-          let phis = List.filter ~f:Fn.(not <<< is_trivially_false) phis in
+          let phis = List.filter ~f:(fun x -> not (is_trivially_false x)) phis in
           Hfl_syntax.mk_ors phis ~kind:k
       | And(phis, k) -> And(List.map ~f:hfl phis, k)(* preserve the structure *)
       | Or (phis, k) -> Or (List.map ~f:hfl phis, k)(* preserve the structure *)
@@ -451,7 +450,7 @@ module Simplify = struct
     fun ?(is_true=is_true_def) ?(is_false=is_false_def) -> function
     | Formula.And phis ->
         let phis = List.map ~f:formula phis in
-        let phis = List.filter ~f:Fn.(not <<< is_true) phis in
+        let phis = List.filter ~f:(fun x -> not (is_true x)) phis in
         begin if List.exists ~f:is_false phis then
           Bool false
         else match phis with
@@ -461,7 +460,7 @@ module Simplify = struct
         end
     | Formula.Or phis ->
         let phis = List.map ~f:formula phis in
-        let phis = List.filter ~f:Fn.(not <<< is_false) phis in
+        let phis = List.filter ~f:(fun x -> not (is_false x)) phis in
         begin if List.exists ~f:is_true phis then
           Bool true
         else match phis with
@@ -472,6 +471,7 @@ module Simplify = struct
     | phi -> phi
 end
 
+(* TODO
 module RemoveDisjunction = struct
   (* remove disjunction translator *)
   (**
