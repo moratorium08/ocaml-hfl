@@ -2,11 +2,11 @@
 opam-version: "2.0"
 version: "0.0.1"
 synopsis: "OCaml library for manipulaing HFL formulas"
-maintainer: ["sakayori@kb.is.s.u-tokyo.ac.jp"]
-authors: ["Ken Sakayori"]
+maintainer: ["Ken Sakayori <sakayori@kb.is.s.u-tokyo.ac.jp>"]
+authors: ["Naoki Iwayama" "Ken Sakayori"]
 license: "Apache-2.0"
-homepage: "https://github.com/hopv/hfl"
-bug-reports: "https://github.com/hopv/hfl/issues"
+homepage: "https://github.com/hopv/ocaml-hfl"
+bug-reports: "https://github.com/hopv/ocaml-hfl/issues"
 depends: [
   "dune" {>= "3.0"}
   "base"
@@ -34,4 +34,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/hopv/hfl.git"
+dev-repo: "git+https://github.com/hopv/ocaml-hfl.git"
