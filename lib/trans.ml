@@ -590,7 +590,7 @@ module RemoveDisjunction = struct
     (Printf.printf "[NO_DISJUNCTION]\n"; rules)
 
 end
-
+*)
 module Preprocess = struct
   (* gets hes_rule list. returns hes_rule list and toplevel name*)
   let translate_top top_rule = 
@@ -608,4 +608,3 @@ module Preprocess = struct
     | [] -> [], None
     | top::xs -> translate_top top::xs, Some(top.var)
 end
-*)
