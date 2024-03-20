@@ -10,15 +10,7 @@ type 'ty t =
 
 let eq x y = String.equal x.name y.name && x.id = y.id
 
-class counter = object
-  val mutable cnt = 0
-  method tick =
-    let x = cnt in
-    cnt <- x + 1;
-    x
-  end
-
-let id_counter = new counter
+let id_counter = new Util.counter
 let gen_id () = id_counter#tick
 
 let to_string id =

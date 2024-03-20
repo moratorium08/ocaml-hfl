@@ -9,18 +9,8 @@ module S = struct
   module Hflz    = Hflz
 end
 
-module List = struct
-  include List
-  let enumurate xs =
-    List.zip_exn xs (List.init (List.length xs) ~f:(fun x -> x))
-end
-
-module Map = struct
-  include Map
-  let replace map ~key ~data =
-        let map = remove map key in
-        add_exn map ~key ~data
-end
+module List = Util.List
+module Map = Util.Map
 
 let log_src = Logs.Src.create ~doc:"Transform" "Trans"
 module Log = (val Logs.src_log log_src)
@@ -318,7 +308,7 @@ module Reduce = struct
             Scc.rdfs dep_graph (Id.remove_ty main.var) []
             |> snd
             |> List.rev
-            |> List.enumurate
+            |> List.enumerate
             |> Map.of_alist_exn (module Id.Key)
           in
           List.sort inlinables ~compare:begin fun x y ->

@@ -1,11 +1,6 @@
 open Base
 
-module Map = struct
-  include Map
-  let replace map ~key ~data =
-        let map = remove map key in
-        add_exn map ~key ~data
-end
+module Map = Util.Map
 
 type raw_hflz =
   | Bool of bool
@@ -79,15 +74,8 @@ module Typing = struct
   type id = int
   let new_id    : unit -> id    = Id.gen_id
 
-  class counter = object
-  val mutable cnt = 0
-  method tick =
-    let x = cnt in
-    cnt <- x + 1;
-    x
-  end
-  let new_tyvar : unit -> tyvar =
-    let counter = new counter in
+ let new_tyvar : unit -> tyvar =
+    let counter = new Util.counter in
     fun () -> TvRef (counter#tick, ref None)
 
   let rec pp_hum_tyvar : tyvar Print.t =
