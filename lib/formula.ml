@@ -1,6 +1,8 @@
 open Base
 open Id
 
+module List = Util.List
+
 type pred =
   | Eq
   | Neq
@@ -64,13 +66,6 @@ let mk_not f = mk_not' Void.absurd f
 
 let mk_implies a b = mk_or (mk_not a) b
 
-
-(* TODO This should be hidden *)
-let cartesian_products : 'a list list -> 'a list list =
-  fun xss ->
-  List.fold_right xss ~init:[[]] ~f:begin fun xs acc ->
-    List.map (List.cartesian_product xs acc) ~f:begin fun (y,ys) -> y::ys end
-  end
 
 let rec to_DNF : ('var, 'arith) gen_t -> ('var, 'arith) gen_t list list =
   fun f -> match f with
