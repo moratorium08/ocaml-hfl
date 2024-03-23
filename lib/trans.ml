@@ -201,12 +201,7 @@ module Reduce = struct
         let dep_graph : Scc.graph =
           Map.of_alist_exn (module Id.Key)  @@ List.map (main::rules) ~f:begin fun rule ->
             let id = rule.var in
-            let dep =
-              Hflz.fvs rule.body
-              |> IdSet.filter ~f:begin fun x -> (* filter nonterminals *)
-                  let c = String.get x.Id.name 0 in
-                  c == Char.uppercase c (* XXX ad hoc *)
-                 end
+            let dep = S.Hflz.fpreds rule.body
             in Id.remove_ty id ,dep
           end
         in

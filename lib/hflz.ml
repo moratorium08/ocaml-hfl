@@ -80,3 +80,10 @@ let rec fvs = function
   | Pred (_,as')   -> IdSet.union_list @@ List.map as' ~f:begin fun a ->
                         IdSet.of_list @@ List.map ~f:Id.remove_ty @@ Arith.fvs a
                       end
+
+let fpreds formula =
+  fvs formula
+  |> IdSet.filter ~f:begin fun x -> (* filter nonterminals *)
+    let c = String.get x.Id.name 0 in
+    c == Char.uppercase c (* XXX ad hoc *)
+  end
