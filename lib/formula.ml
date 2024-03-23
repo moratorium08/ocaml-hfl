@@ -12,7 +12,6 @@ type pred =
   | Gt
   [@@deriving eq,ord,show,iter,map,fold,sexp]
 
-(* formula parametrized by variable type and arith type *)
 type ('bvar, 'avar) gen_t =
   | Bool of bool
   | Var  of 'bvar
