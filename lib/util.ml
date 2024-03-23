@@ -21,3 +21,13 @@ class counter = object
     cnt <- x + 1;
     x
 end
+
+module Void = struct
+  type t = Void of { absurd : 'a. 'a }
+  let absurd (Void void) = void.absurd
+  let equal v _     = absurd v
+  let compare v _   = absurd v
+  let pp _ v        = absurd v
+  let t_of_sexp _   = failwith "void_of_sexp"
+  let sexp_of_t v   = absurd v
+end

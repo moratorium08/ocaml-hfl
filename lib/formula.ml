@@ -27,16 +27,7 @@ let negate_pred = function
   | Lt  -> Ge
   | Ge  -> Lt
 
-(* TODO this should be hidden *)
-module Void = struct
-  type t = Void of { absurd : 'a. 'a }
-  let absurd (Void void) = void.absurd
-  let equal v _     = absurd v
-  let compare v _   = absurd v
-  let pp _ v        = absurd v
-  let t_of_sexp _   = failwith "void_of_sexp"
-  let sexp_of_t v   = absurd v
-end
+module Void = Util.Void
 
 (* type t = ((string * [`Pos|`Neg]), [`Int] Id.t) gen_t *)
 type t = (Void.t, [`Int] Id.t) gen_t
