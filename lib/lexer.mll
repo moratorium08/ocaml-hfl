@@ -23,11 +23,8 @@ rule token = parse
 | "%LTS"                   { skip_all lexbuf; token lexbuf }
 | eof                      { EOF       }
 | "%HES"                   { START_HES }
-| "%ENV"                   { START_ENV }
 | "("                      { LPAREN    }
 | ")"                      { RPAREN    }
-| "["                      { LSQUARE   }
-| "]"                      { RSQUARE   }
 | "true"                   { TRUE      }
 | "false"                  { FALSE     }
 | ("\\"|"λ")               { LAMBDA    }
