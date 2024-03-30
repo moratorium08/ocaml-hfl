@@ -15,4 +15,4 @@ val union_list : t list -> t
 val filter : t -> f:(unit Id.t -> bool) -> t
 
 val to_list : t -> unit Id.t list
-val of_list : unit Id.t list -> t
+val of_list : 'a Id.t list -> t

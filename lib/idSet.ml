@@ -9,4 +9,4 @@ let union = Set.union
 let union_list = Set.union_list (module Id.Key)
 let filter = Set.filter
 let to_list = Set.to_list
-let of_list = Set.of_list (module Id.Key)
+let of_list xs = Set.of_list (module Id.Key) (List.map xs ~f:(fun x -> Id.remove_ty x))
