@@ -5,7 +5,6 @@ module S = struct
   module Type    = Type
   module Arith   = Arith
   module Formula = Formula
-  module Hfl     = Hfl_syntax
   module Hflz    = Hflz
 end
 
@@ -126,45 +125,9 @@ module Subst = struct
           hflz env body
       | _ -> invalid_arg "reduce_head"
   end
-
-  module Hfl = struct
-    let rec hfl : S.Hfl.t env -> S.Hfl.t -> S.Hfl.t =
-      fun env phi -> match phi with
-        | Var x ->
-            begin match IdMap.lookup env x with
-            | t -> t
-            | exception Not_found -> Var x
-            end
-        | Bool _         -> phi
-        | Or(phis,k)     -> Or(List.map ~f:(hfl env) phis, k)
-        | And(phis,k)    -> And(List.map ~f:(hfl env) phis, k)
-        | App(phi1,phi2) -> App(hfl env phi1, hfl env phi2)
-        | Abs(x, t)      -> Abs(x, hfl (IdMap.remove env x) t)
-  end
 end
 
 module Reduce = struct
-  module Hfl = struct
-    let rec beta : S.Hfl.t -> S.Hfl.t = function
-      | Or (phis, k) -> Or (List.map ~f:beta phis, k)
-      | And(phis, k) -> And(List.map ~f:beta phis, k)
-      | App(phi1, phi2) ->
-          begin match beta phi1, beta phi2 with
-          | Abs(x, phi1), phi2 -> Subst.Hfl.hfl (IdMap.of_list [x,phi2]) phi1
-          | phi1, phi2 -> App(phi1, phi2)
-          end
-      | Abs(x, phi) -> Abs(x, beta phi)
-      | phi -> phi
-    let rec eta : S.Hfl.t -> S.Hfl.t = function (* The Coercion rule generates many eta reduxes *)
-      | Abs(x, (App (phi, Var x')))
-          when Id.eq x x' && not (IdSet.mem (S.Hfl.fvs phi) x) -> phi
-      | Abs(x, phi)     -> Abs(x, eta phi)
-      | Or (phis, k)    -> Or (List.map ~f:eta phis, k)
-      | And(phis, k)    -> And(List.map ~f:eta phis, k)
-      | App(phi1, phi2) -> App(eta phi1, eta phi2)
-      | phi             -> phi
-    let beta_eta x = eta (beta x)
-  end
   module Hflz = struct
     let rec beta : 'a S.Hflz.t -> 'a S.Hflz.t = function
       | Or (phi1, phi2) -> Or (beta phi1, beta phi2)
@@ -346,33 +309,6 @@ module Simplify = struct
           else (fun x -> x)
          end
       |> List.map ~f:hflz_hes_rule
-
-  let rec hfl : ?force:bool -> Hfl_syntax.t -> Hfl_syntax.t =
-    let is_trivially_true : Hfl_syntax.t -> bool =
-      fun phi -> match phi with
-      | Bool b -> b
-      | _ -> false
-    in
-    let is_trivially_false : Hfl_syntax.t -> bool =
-      fun phi -> match phi with
-      | Bool b -> not b
-      | _ -> false
-    in
-    fun ?(force=false) phi ->
-      match Reduce.Hfl.beta_eta phi with
-      | And(phis, k) when Poly.(=) k `Inserted || force ->
-          let phis = List.map ~f:hfl phis in
-          let phis = List.filter ~f:(fun x ->  not (is_trivially_true x)) phis in
-          Hfl_syntax.mk_ands phis ~kind:k
-      | Or(phis, k) when Poly.(=) k  `Inserted || force ->
-          let phis = List.map ~f:hfl phis in
-          let phis = List.filter ~f:(fun x -> not (is_trivially_false x)) phis in
-          Hfl_syntax.mk_ors phis ~kind:k
-      | And(phis, k) -> And(List.map ~f:hfl phis, k)(* preserve the structure *)
-      | Or (phis, k) -> Or (List.map ~f:hfl phis, k)(* preserve the structure *)
-      | Abs(x,phi)     -> Abs(x, hfl ~force phi)
-      | App(phi1,phi2) -> App(hfl ~force phi1, hfl ~force phi2)
-      | phi -> phi
 
   let rec is_true_def =
     fun phi -> match phi with
