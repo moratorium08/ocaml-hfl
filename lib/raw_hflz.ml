@@ -349,7 +349,9 @@ module Typing = struct
               error @@ Fmt.str "%s is defined twice" rule.var
           end
         in
-        List.map hes ~f:(self#hes_rule id_env)
+        match List.map hes ~f:(self#hes_rule id_env) with
+        | [] -> failwith "raw_hflz: hes"
+        | {body=entry; _}::rules -> (entry, rules)
   end
   exception IntType
 
@@ -405,7 +407,7 @@ module Typing = struct
         { var; body; fix = rule.fix }
 
     method hes : unit Hflz.hes -> simple_ty Hflz.hes =
-      fun hes -> List.map hes ~f:self#hes_rule
+        fun (entry, rules) -> self#term entry, List.map rules ~f:self#hes_rule
   end
 
   let to_typed rhes =
@@ -417,7 +419,7 @@ module Typing = struct
     let deref     = new deref ty_env in
     let hes       = deref#hes annotated in
     match hes with
-    | main::rest ->
+    | entry, main::rest ->
         (* dirty hack for compatibility with Suzuki's impl*)
         let ub_ints =
           List.map (Map.to_alist unbound_ints) ~f:begin
@@ -429,7 +431,7 @@ module Typing = struct
           let body = Hflz.mk_abss ub_ints main.body in
           { main with var; body }
         in
-        main :: rest
+        entry, main :: rest
     | _ -> assert false
 end
 
@@ -479,28 +481,31 @@ let rename_ty_body : simple_ty Hflz.hes -> simple_ty Hflz.hes =
     in
     let env =
       IdMap.of_list @@
-        List.map hes ~f:begin fun rule ->
+        List.map (snd hes) ~f:begin fun rule ->
           rule.var, rule.var.ty
         end
     in
-    List.map hes ~f:(rule env)
+    let (entry, rules) = hes in
+    term env entry,
+    List.map rules ~f:(rule env)
+
 
 let to_typed (raw_hes, (env : (string * Formula.t list ty) list)) =
   let typed_hes =
     raw_hes
     |> Typing.to_typed
-    |> List.map ~f:rename_simple_ty_rule
+    |> (fun (e, rules) -> e, List.map ~f:rename_simple_ty_rule rules)
   in
   let () = (* check env *)
     let unknown_nt =
       List.find env ~f:begin fun (f,_) ->
-        List.for_all typed_hes ~f:(fun r -> not @@ String.equal r.var.name f)
+        List.for_all (snd typed_hes) ~f:(fun r -> not @@ String.equal r.var.name f)
       end
     in
     match unknown_nt with
     | None -> ()
     | Some (f,_) -> Exception.fatal @@ "ENV: There is no NT named " ^ f
   in
-  let gamma = IdMap.of_list @@ List.map typed_hes ~f:(fun rule -> rule.var, rule.var.ty)
+  let gamma = IdMap.of_list @@ List.map (snd typed_hes) ~f:(fun rule -> rule.var, rule.var.ty)
  in
-  rename_ty_body typed_hes, gamma
+ rename_ty_body typed_hes, gamma

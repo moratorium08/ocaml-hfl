@@ -26,8 +26,8 @@ type 'ty hes_rule =
 let lookup_rule f hes =
   List.find_exn hes ~f:(fun r -> Id.eq r.var f)
 
-type 'ty hes = 'ty hes_rule list
-  [@@deriving eq,ord,show,iter,map,fold,sexp]
+type 'ty hes = 'ty t * 'ty hes_rule list
+    [@@deriving eq,ord,show,iter,map,fold,sexp]
 
 (* Construction *)
 let mk_bool b = Bool b

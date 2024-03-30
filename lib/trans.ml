@@ -103,7 +103,7 @@ module Subst = struct
         | Bool _         -> phi
 
     (** Invariant: phi must have type TyBool *)
-    let reduce_head : 'ty S.Hflz.hes -> 'ty S.Hflz.t -> 'ty S.Hflz.t =
+    let reduce_head : 'ty S.Hflz.hes_rule list -> 'ty S.Hflz.t -> 'ty S.Hflz.t =
       fun hes phi -> match phi with
       | Var x ->
           begin match x.ty, List.find hes ~f:(fun rule -> S.Id.eq x rule.var) with
@@ -192,18 +192,15 @@ module Reduce = struct
         ls
     end
     let inline : simple_ty S.Hflz.hes -> simple_ty S.Hflz.hes =
-      fun rules ->
-        let main, rules = match rules with
-          | [] -> assert false
-          | main::rules -> main, rules
-        in
+      fun (main, rules) ->
         let module Scc = Scc(Id.Key) in
+        let fpreds_of_main = S.Hflz.fpreds main in
         let dep_graph : Scc.graph =
-          Map.of_alist_exn (module Id.Key)  @@ List.map (main::rules) ~f:begin fun rule ->
+          Map.of_alist_exn (module Id.Key)  @@ List.map rules ~f:begin fun rule ->
             let id = rule.var in
             let dep = S.Hflz.fpreds rule.body
             in Id.remove_ty id ,dep
-          end
+         end
         in
         let mutual_recursives =
           Scc.scc dep_graph
@@ -214,13 +211,17 @@ module Reduce = struct
         let rules, inlinables =
           List.partition_tf rules ~f:begin fun rule ->
             IdSet.mem mutual_recursives rule.var ||
-            IdSet.mem (Hflz.fvs rule.body) rule.var ||
-            Id.eq rule.var main.var
+            IdSet.mem (Hflz.fvs rule.body) rule.var
           end
         in
         let inlinables = (* topologically sort *)
           let topological_ord =
-            Scc.rdfs dep_graph (Id.remove_ty main.var) []
+            Set.fold fpreds_of_main ~init:(dep_graph, []) ~f:begin fun (g, vs) v ->
+              if not (List.mem vs v ~equal:(fun x y -> Id.Key.compare x y = 0)) then
+              Scc.rdfs g v vs
+              else
+                g, vs
+            end
             |> snd
             |> List.rev
             |> List.enumerate
@@ -256,9 +257,12 @@ module Reduce = struct
             map
           end
         in
-        List.map (main::rules) ~f:begin fun rule ->
+        let simplified_rules = List.map rules ~f:begin fun rule ->
           { rule with body = Subst.Hflz.hflz inline_map rule.body }
-        end
+          end
+        in
+        let simplified_main = Subst.Hflz.hflz inline_map main in
+        (simplified_main, simplified_rules)
   end
 end
 
@@ -304,7 +308,6 @@ module Simplify = struct
           then Reduce.Hflz.inline
           else (fun x -> x)
          end
-      |> List.map ~f:hflz_hes_rule
 
   let rec is_true_def =
     fun phi -> match phi with
