@@ -27,6 +27,7 @@ rule token = parse
 | ")"                      { RPAREN    }
 | "true"                   { TRUE      }
 | "false"                  { FALSE     }
+| "!" | "not"              { NOT       }
 | ("\\"|"λ")               { LAMBDA    }
 | ("=v"|"=ν")              { DEF_G     }
 | "=μ"                     { DEF_L     }

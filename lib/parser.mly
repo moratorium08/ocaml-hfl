@@ -19,12 +19,14 @@ open Raw_hflz
 
 %token PLUS  "+" MINUS "-" STAR  "*" SLASH "/" PERCENT "%" NEG
 %token EQ "=" NEQ "<>" LE "<=" GE ">=" /* LT "<" GT ">" */
+%token NOT "not"
 %token AND "&&" OR "||"
 
 %token TBOOL TINT TARROW "->" SEMICOLON ";"
 
 %right OR
 %right AND
+%nonassoc NOT
 %left PLUS MINUS
 %left STAR
 %nonassoc NEG
@@ -63,6 +65,7 @@ abs_expr:
 and_or_expr:
 | and_or_expr "&&" and_or_expr  { mk_ands [$1;$3] }
 | and_or_expr "||" and_or_expr  { mk_ors  [$1;$3] }
+| "not" and_or_expr             { mk_not $2 }
 | FORALL lvar "." and_or_expr   { mk_forall $2 $4 }
 | EXISTS lvar "." and_or_expr   { mk_exists $2 $4 }
 | pred_expr                     { $1 }
