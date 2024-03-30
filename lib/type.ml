@@ -1,7 +1,5 @@
 open Base
 
-(* General Type *)
-
 type 'ty arg
   = TyInt
   | TySigma of 'ty
@@ -24,9 +22,9 @@ let lift_arg x = Id.{ x with ty = TySigma x.ty }
 (* Simple Type *)
 
 type simple_ty = unit ty
-  [@@deriving eq,ord,show,iter,map,fold,sexp]
+  [@@deriving eq,ord,show,sexp]
 type simple_argty = simple_ty arg
-  [@@deriving eq,ord,show,iter,map,fold,sexp]
+  [@@deriving eq,ord,show,sexp]
 
 let to_simple : 'a ty -> simple_ty = 
   fun x -> map_ty (fun _ -> ()) x
