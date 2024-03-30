@@ -1,6 +1,5 @@
 open Base
 
-(** ['ty] is typically a type of the id *)
 type 'ty t =
   { name : string
   ; id   : int
