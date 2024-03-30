@@ -198,27 +198,8 @@ let simple_ty : Type.simple_ty Fmt.t = simple_ty_ Prec.zero
 let simple_argty_ : Prec.t -> Type.simple_ty Type.arg Fmt.t = argty_ simple_ty_
 let simple_argty : Type.simple_ty Type.arg Fmt.t = simple_argty_ Prec.zero
 
-let abstraction_ty : Type.abstraction_ty Fmt.t =
-  let annot ppf fs =
-    Fmt.pf ppf "[%a]"
-      (Fmt.list ~sep:semicolon formula) fs
-  in ty annot
-let abstraction_argty  : Type.abstraction_argty Fmt.t =
-  argty abstraction_ty
 
-
-let rec abstracted_ty_ : Prec.t -> Type.abstracted_ty Fmt.t =
-  fun prec ppf aty -> match aty with
-    | ATyBool ->
-        Fmt.string ppf "bool"
-    | ATyArrow(arg,ret) ->
-        show_paren (prec > Prec.arrow) ppf "%a ->@ %a"
-          (abstracted_ty_ Prec.(succ arrow)) arg
-          (abstracted_ty_ Prec.arrow) ret
-let abstracted_ty : Type.abstracted_ty Fmt.t = abstracted_ty_ Prec.zero
-let abstracted_argty : Type.abstracted_argty Fmt.t = abstracted_ty
-
-(* Fixpoint *)
+ (* Fixpoint *)
 
 let fixpoint : Fixpoint.t Fmt.t =
   fun ppf t -> match t with

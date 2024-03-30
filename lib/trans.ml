@@ -38,18 +38,7 @@ module Subst = struct
         | Or  ps -> Or (List.map ~f:(formula env) ps)
         | _ -> p
 
-    let rec abstraction_ty
-              : [`Int ] S.Id.t env
-             -> abstraction_ty
-             -> abstraction_ty =
-      fun env ty -> match ty with
-        | TyBool fs -> TyBool (List.map fs ~f:(formula env))
-        | TyArrow({ty=TyInt;_} as x, ty) ->
-            TyArrow(x, abstraction_ty (IdMap.remove env x) ty)
-        | TyArrow({ty=TySigma ty_arg;_} as y, ret_ty) ->
-            TyArrow({y with ty = TySigma (abstraction_ty env ty_arg)},
-                    abstraction_ty env ret_ty)
-  end
+ end
 
   (* TODO IdMapを使う *)
   module Arith = struct
@@ -82,39 +71,6 @@ module Subst = struct
     let formula : 'a. 'a S.Id.t -> S.Arith.t -> S.Formula.t -> S.Formula.t =
       fun x a p -> formula_ S.Id.eq {x with ty = `Int} a p
 
-    let rec abstraction_ty
-              : unit S.Id.t
-             -> S.Arith.t
-             -> abstraction_ty
-             -> abstraction_ty =
-      fun x a sigma ->
-        match sigma with
-        | TyBool preds ->
-            TyBool (List.map ~f:(formula x a) preds)
-        | TyArrow (arg,ret) ->
-            TyArrow( { arg with ty = abstraction_argty x a arg.ty }
-                   , abstraction_ty x a ret)
-    and abstraction_argty
-          : unit S.Id.t
-         -> S.Arith.t
-         -> abstraction_ty arg
-         -> abstraction_ty arg =
-      fun x a arg ->
-        match arg with
-        | TyInt -> TyInt
-        | TySigma(sigma) -> TySigma(abstraction_ty x a sigma)
-    let abstraction_ty
-          : 'a S.Id.t
-         -> S.Arith.t
-         -> abstraction_ty
-         -> abstraction_ty =
-      fun x a sigma -> abstraction_ty (S.Id.remove_ty x) a sigma
-    let abstraction_argty
-          : 'a S.Id.t
-         -> S.Arith.t
-         -> abstraction_ty arg
-         -> abstraction_ty arg =
-      fun x a arg -> abstraction_argty (S.Id.remove_ty x) a arg
   end
 
   module Hflz = struct
