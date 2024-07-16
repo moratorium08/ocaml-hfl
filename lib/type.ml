@@ -13,7 +13,7 @@ type 'annot ty
 type 'annot arg_ty = 'annot ty arg
   [@@deriving eq,ord,show,iter,map,fold,sexp]
 
-let unsafe_unlift : 'annot arg_ty -> 'annot ty = function
+let unsafe_unlift = function
   | TyInt -> invalid_arg "unsafe_unlift"
   | TySigma ty -> ty
 
@@ -26,14 +26,12 @@ type simple_ty = unit ty
 type simple_argty = simple_ty arg
   [@@deriving eq,ord,show,sexp]
 
-let to_simple : 'a ty -> simple_ty = 
-  fun x -> map_ty (fun _ -> ()) x
+let to_simple x = map_ty (fun _ -> ()) x
 
-let mk_arrows : 'annot ty arg Id.t list -> 'annot ty -> 'annot ty =
-  fun args ret_ty ->
-    List.fold_right args ~init:ret_ty ~f:begin fun arg ret_ty ->
-      TyArrow(arg, ret_ty)
-    end
+let mk_arrows args ret_ty =
+  List.fold_right args ~init:ret_ty ~f:begin fun arg ret_ty ->
+    TyArrow(arg, ret_ty)
+  end
 
 let decompose_arrow : 'annot ty -> 'annot ty arg Id.t list * 'annot =
   let rec go acc = function
@@ -41,12 +39,8 @@ let decompose_arrow : 'annot ty -> 'annot ty arg Id.t list * 'annot =
     | TyArrow (x, ty) -> go (x::acc) ty
   in fun x -> go [] x
 
-let rec merge
-          : ('annot -> 'annot -> 'annot)
-         -> 'annot ty
-         -> 'annot ty
-         -> 'annot ty =
-  fun append ty1 ty2 -> match ty1, ty2 with
+let rec merge append ty1 ty2 =
+  match ty1, ty2 with
     | TyBool a1, TyBool a2 -> TyBool (append a1 a2)
     | TyArrow ({ty=TyInt;_} as x1, rty1)
     , TyArrow ({ty=TyInt;_} as x2, rty2) when Id.eq x1 x2 ->
@@ -58,7 +52,6 @@ let rec merge
           , merge append rty1 rty2 )
     | _ -> invalid_arg "Type.merge"
 
-let merges : ('annot -> 'annot -> 'annot) -> 'annot ty list -> 'annot ty =
-  fun append tys -> match tys with
+let merges append = function
     | [] -> invalid_arg "Type.merges"
     | ty::tys -> List.fold_right ~init:ty tys ~f:(merge append)
