@@ -1,22 +1,19 @@
 open Base
 
-include Fmt
 include Format
+include Fmt
 
 let (^^) = Stdlib.(^^)
 
-let semicolon : unit Fmt.t = fun ppf () -> string ppf ";"
+let semicolon = fun ppf () -> string ppf ";"
 
-let list_comma : 'a Fmt.t -> 'a list Fmt.t =
-  fun format_x ppf xs ->
+let list_comma format_x ppf xs =
     let sep ppf () = Fmt.pf ppf ",@," in
     Fmt.pf ppf "[@[%a@]]" Fmt.(list ~sep format_x) xs
-let list_semi : 'a Fmt.t -> 'a list Fmt.t =
-  fun format_x ppf xs ->
+let list_semi format_x ppf xs =
     let sep ppf () = Fmt.pf ppf ";@," in
     Fmt.pf ppf "[@[%a@]]" Fmt.(list ~sep format_x) xs
-let list_set : 'a Fmt.t -> 'a list Fmt.t =
-  fun format_x ppf xs ->
+let list_set format_x ppf xs =
     let sep ppf () = Fmt.pf ppf ",@," in
     Fmt.pf ppf "{@[%a@]}" Fmt.(list ~sep format_x) xs
 
@@ -59,45 +56,36 @@ end
 
 type prec = Prec.t
 type 'a t_with_prec = Prec.t -> 'a t
-let ignore_prec : 'a t -> 'a t_with_prec =
-  fun orig ->
-    fun _prec ppf x ->
+
+let ignore_prec orig _prec ppf x =
       orig ppf x
 
-let show_paren
-     : bool
-    -> formatter
-    -> ('a, formatter, unit) format
-    -> 'a =
-  fun b ppf fmt ->
+let show_paren b ppf fmt =
     if b
     then Fmt.pf ppf ("(" ^^ fmt ^^ ")")
     else Fmt.pf ppf fmt
 
-let void : Formula.Void.t t =
-  fun _ v -> Formula.Void.absurd v
-let void_ : Formula.Void.t t_with_prec =
-  ignore_prec void
+let void _ v = Formula.Void.absurd v
+let void_ = ignore_prec void
 
-let id : 'ty Id.t t =
-  fun ppf x -> Fmt.pf ppf "%s" (Id.to_string x)
-let id_ : 'ty Id.t t_with_prec =
-  ignore_prec id
+let id ppf x = Fmt.pf ppf "%s" (Id.to_string x)
+let id_ = ignore_prec id
 
 (* Arith *)
 
-let op : Arith.op t =
-  fun ppf op -> match op with
+let op ppf =
+  let open Arith in
+  function
     | Add  -> Fmt.string ppf "+"
     | Sub  -> Fmt.string ppf "-"
     | Mult -> Fmt.string ppf "*"
-    | Div -> Fmt.string ppf "/"
-    | Mod -> Fmt.string ppf "%"
-let op_ : Arith.op t_with_prec =
-  ignore_prec op
+    | Div  -> Fmt.string ppf "/"
+    | Mod  -> Fmt.string ppf "%"
+let op_ = ignore_prec op
 
-let rec gen_arith_ : 'avar t_with_prec -> 'avar Arith.gen_t t_with_prec =
-  fun avar_ prec ppf a -> match a with
+let rec gen_arith_ avar_ prec ppf =
+  let open Arith in
+  function
     | Int n -> Fmt.int ppf n
     | Var x -> avar_ prec ppf x
     | Op (Sub,[Int 0;a]) ->
@@ -112,30 +100,25 @@ let rec gen_arith_ : 'avar t_with_prec -> 'avar Arith.gen_t t_with_prec =
           op op'
           (gen_arith_ avar_ prec_r) a2
     | _ -> assert false
-let gen_arith : 'avar t_with_prec -> 'avar Arith.gen_t t =
-  fun avar_ ppf a -> gen_arith_ avar_ Prec.zero ppf a
-let arith_ : Prec.t -> Arith.t Fmt.t =
-  fun prec ppf a -> gen_arith_ id_ prec ppf a
-let arith : Arith.t Fmt.t = arith_ Prec.zero
+let gen_arith avar_ = gen_arith_ avar_ Prec.zero
+let arith_ = gen_arith_ id_
+let arith = arith_ Prec.zero
 
 (* Formula *)
 
-let pred : Formula.pred t =
-  fun ppf pred -> match pred with
-    | Eq  -> Fmt.string ppf "="
-    | Neq -> Fmt.string ppf "/="
-    | Le  -> Fmt.string ppf "<="
-    | Ge  -> Fmt.string ppf ">="
-    | Lt  -> Fmt.string ppf "<"
-    | Gt  -> Fmt.string ppf ">"
-let pred_ : Formula.pred t_with_prec =
-  ignore_prec pred
+let pred ppf =
+  let open Formula in
+  function
+  | Eq  -> Fmt.string ppf "="
+  | Neq -> Fmt.string ppf "/="
+  | Le  -> Fmt.string ppf "<="
+  | Ge  -> Fmt.string ppf ">="
+  | Lt  -> Fmt.string ppf "<"
+  | Gt  -> Fmt.string ppf ">"
+let pred_ = ignore_prec pred
 
-let rec gen_formula_
-    :  'bvar t_with_prec
-    -> 'avar t_with_prec
-    -> ('bvar, 'avar) Formula.gen_t t_with_prec =
-  fun bvar avar prec ppf f -> match f with
+let rec gen_formula_ bvar avar prec ppf (f : ('avar, 'bvar) Formula.gen_t) =
+   match f with
     | Var x      -> bvar prec ppf x
     | Bool true  -> Fmt.string ppf "true"
     | Bool false -> Fmt.string ppf "false"
@@ -153,31 +136,24 @@ let rec gen_formula_
           pred pred'
           (gen_arith_ avar prec) f2
     | Pred _ -> assert false
-let gen_formula
-    :  'bvar t_with_prec
-    -> 'avar t_with_prec
-    -> ('bvar, 'avar) Formula.gen_t t =
-  fun bvar avar ppf f ->
-    gen_formula_ bvar avar Prec.zero ppf f
-let formula_ : Formula.t t_with_prec =
-  gen_formula_ void_ id_
-let formula : Formula.t Fmt.t =
-  formula_ Prec.zero
+let gen_formula bvar avar ppf f = gen_formula_ bvar avar Prec.zero ppf f
+let formula_ = gen_formula_ void_ id_
+let formula = formula_ Prec.zero
 
 (* Type *)
 
-let argty_ : (Prec.t -> 'ty Fmt.t) -> Prec.t -> 'ty Type.arg Fmt.t =
-  fun format_ty_ prec ppf arg -> match arg with
+let argty_ format_ty_ prec ppf (arg : 'ty Type.arg) =
+  match arg with
     | TyInt -> Fmt.string ppf "int"
     | TySigma sigma -> format_ty_ prec ppf sigma
 
-let argty : 'ty Fmt.t -> 'ty Type.arg Fmt.t =
-  fun format_ty ppf arg -> match arg with
+let argty format_ty ppf (arg : 'ty Type.arg) =
+  match arg with
     | TyInt -> Fmt.string ppf "int"
     | TySigma sigma -> format_ty ppf sigma
 
-let rec ty_ : ?with_var:bool -> 'annot Fmt.t -> Prec.t -> 'annot Type.ty Fmt.t =
-  fun ?(with_var=true) format_annot prec ppf ty -> match ty with
+let rec ty_ ?(with_var=true) format_annot prec ppf (ty : 'annot Type.ty) =
+  match ty with
       | TyBool annot ->
           Fmt.pf ppf "bool@[%a@]" format_annot annot
       | TyArrow (x, ret) ->
@@ -190,26 +166,26 @@ let rec ty_ : ?with_var:bool -> 'annot Fmt.t -> Prec.t -> 'annot Type.ty Fmt.t =
             show_paren (prec > Prec.arrow) ppf "@[<1>%a ->@ %a@]"
               (argty (ty_ ~with_var format_annot Prec.(succ arrow))) x.ty
               (ty_ ~with_var format_annot Prec.arrow) ret
-let ty : ?with_var:bool  -> 'annot Fmt.t -> 'annot Type.ty Fmt.t =
-  fun ?(with_var=true) format_annot -> ty_ ~with_var format_annot Prec.zero
+let ty  ?(with_var=true) format_annot = ty_ ~with_var format_annot Prec.zero
 
-let simple_ty_ : Prec.t -> Type.simple_ty Fmt.t = ty_ ~with_var:false Fmt.nop
-let simple_ty : Type.simple_ty Fmt.t = simple_ty_ Prec.zero
-let simple_argty_ : Prec.t -> Type.simple_ty Type.arg Fmt.t = argty_ simple_ty_
-let simple_argty : Type.simple_ty Type.arg Fmt.t = simple_argty_ Prec.zero
+let simple_ty_ = ty_ ~with_var:false Fmt.nop
+let simple_ty = simple_ty_ Prec.zero
+let simple_argty_ = argty_ simple_ty_
+let simple_argty = simple_argty_ Prec.zero
 
 
  (* Fixpoint *)
 
-let fixpoint : Fixpoint.t Fmt.t =
-  fun ppf t -> match t with
-    | Least    -> Fmt.string ppf "μ"
-    | Greatest -> Fmt.string ppf "ν"
+let fixpoint ppf =
+  let open Fixpoint in
+  function
+  | Least    -> Fmt.string ppf "μ"
+  | Greatest -> Fmt.string ppf "ν"
 
 (* Hflz *)
 
-let rec hflz_ : (Prec.t -> 'ty Fmt.t) -> Prec.t -> 'ty Hflz.t Fmt.t =
-  fun format_ty_ prec ppf (phi : 'ty Hflz.t) -> match phi with
+let rec hflz_ format_ty_ prec ppf (phi : 'ty Hflz.t)  =
+  match phi with
     | Bool true -> Fmt.string ppf "true"
     | Bool false -> Fmt.string ppf "false"
     | Var x -> id ppf x
@@ -245,19 +221,16 @@ let rec hflz_ : (Prec.t -> 'ty Fmt.t) -> Prec.t -> 'ty Hflz.t Fmt.t =
     | Pred (pred, as') ->
         show_paren (prec > Prec.eq) ppf "%a"
           formula (Formula.Pred(pred, as'))
-let hflz : (Prec.t -> 'ty Fmt.t) -> 'ty Hflz.t Fmt.t =
-  fun format_ty_ -> hflz_ format_ty_ Prec.zero
+let hflz format_ty_ = hflz_ format_ty_ Prec.zero
 
-let hflz_hes_rule : (Prec.t -> 'ty Fmt.t) -> 'ty Hflz.hes_rule Fmt.t =
-  fun format_ty_ ppf rule ->
+let hflz_hes_rule format_ty_ ppf (rule : 'ty Hflz.hes_rule) =
     Fmt.pf ppf "@[<2>%s : %a =%a@ %a@]"
       (Id.to_string rule.var)
       (format_ty_ Prec.zero) rule.var.ty
       fixpoint rule.fix
       (hflz format_ty_) rule.body
 
-let hflz_hes : (Prec.t -> 'ty Fmt.t) -> 'ty Hflz.hes Fmt.t =
-  fun format_ty_ ppf (entry, rules) ->
-    Fmt.pf ppf "@[<v>%a@ s.t.@ %a@]"
-      (hflz format_ty_) entry
-      (Fmt.list (hflz_hes_rule format_ty_)) rules
+let hflz_hes format_ty_ ppf (entry, rules) =
+  Fmt.pf ppf "@[<v>%a@ s.t.@ %a@]"
+    (hflz format_ty_) entry
+    (Fmt.list (hflz_hes_rule format_ty_)) rules
