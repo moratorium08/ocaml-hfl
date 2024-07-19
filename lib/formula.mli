@@ -1,8 +1,12 @@
 (** Module for (arithemetic) formulas *)
 
+(** {1 Atomic Predicate} *)
+
+(** Type for atomic predicates *)
 type pred = Eq | Neq | Le | Ge | Lt | Gt
 
-(* Derived functions *)
+(** {2 Derived functions} *)
+
 val equal_pred : pred -> pred -> bool
 val compare_pred : pred -> pred -> int
 val pp_pred : Format.formatter -> pred -> unit
@@ -13,6 +17,14 @@ val fold_pred : 'a -> pred -> 'a
 val pred_of_sexp : Sexplib0.Sexp.t -> pred
 val sexp_of_pred : pred -> Sexplib0.Sexp.t
 
+(** {2 Non-derived functions }*)
+
+(** Negates atomic predicates *)
+val negate_pred : pred -> pred
+
+
+(** {1 General Formula}*)
+
 (** Formula parametrized by variable type (['bvar]) and arith type (['avar]) *)
 type ('bvar, 'avar) gen_t =
     Bool of bool
@@ -22,7 +34,7 @@ type ('bvar, 'avar) gen_t =
   | Pred of pred * 'avar Arith.gen_t list
 
 
-(** Derived functions: *)
+(** {2 Derived functions} *)
 
 val equal_gen_t :
   ('bvar -> 'bvar -> bool) ->
@@ -51,14 +63,18 @@ val sexp_of_gen_t :
   ('bvar -> Sexplib0.Sexp.t) ->
   ('avar -> Sexplib0.Sexp.t) -> ('bvar, 'avar) gen_t -> Sexplib0.Sexp.t
 
-val negate_pred : pred -> pred
+(** {1 Formula }*)
+
+(** Formulas are generalized formulas with ['bvar = void].
+    That is, we do not allow the use of [Var of 'bvar].
+    This is not a problem because arithmetic expressions already contain variables *)
 
 module Void = Util.Void
 
 (** Type for formuals *)
 type t = (Void.t, [ `Int ] Id.t) gen_t
 
-(** Derived functions: *)
+(** {2 Derived functions} *)
 
 val equal : t -> t -> bool
 val compare : t -> t -> int
@@ -72,7 +88,9 @@ val sexp_of_t : t -> Sexplib0.Sexp.t
 
 val hash : t -> int
 
-(** Constructors: *)
+(** {2 Constructors} *)
+
+(** Some of the constructors worls for generalized formulas *)
 
 val mk_bool : bool -> ('a, 'b) gen_t
 val mk_var : 'a -> ('a, 'b) gen_t
@@ -85,6 +103,8 @@ val mk_not' : ('bvar -> 'bvar) -> ('bvar, 'a) gen_t -> ('bvar, 'a) gen_t
 val mk_not : (Void.t, 'a) gen_t -> (Void.t, 'a) gen_t
 val mk_implies :
   (Void.t, 'a) gen_t -> (Void.t, 'a) gen_t -> (Void.t, 'a) gen_t
+
+(** {2 Others }*)
 
 val to_DNF :
   ('var, 'arith) gen_t -> ('var, 'arith) gen_t list list
