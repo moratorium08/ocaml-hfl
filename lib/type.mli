@@ -6,7 +6,7 @@
     Usually, {m \sigma} contains {m \tau}.
     The type {m \mathrm{bool}} is also known as proposition type *)
 
-(** General type *)
+(** {1 General type} *)
 
 (** Types for function arguments. Corresponds to {m \iota} in the doc.*)
 type 'ty arg = TyInt | TySigma of 'ty
@@ -66,7 +66,20 @@ val sexp_of_arg_ty : ('annot -> Sexplib0.Sexp.t) -> 'annot arg_ty -> Sexplib0.Se
 val unsafe_unlift : 'annot arg_ty -> 'annot ty
 val lift_arg : 'a Id.t -> 'a arg Id.t
 
-(** Simple type *)
+(** {2 Non-derived functions }*)
+
+val mk_arrows : 'annot ty arg Id.t list -> 'annot ty -> 'annot ty
+val decompose_arrow : 'annot ty -> 'annot ty arg Id.t list * 'annot
+
+val merge : ('annot -> 'annot -> 'annot) -> 'annot ty -> 'annot ty -> 'annot ty
+(** [merge f ty1 ty2] "merges" the annotations in [ty1] and [ty2] using [f] under
+    the assumtion that [ty1] and [ty2] have the same shape (otherwise, raises [invalid_arg]) *)
+
+val merges : ('annot -> 'annot -> 'annot) -> 'annot ty list -> 'annot ty
+(** [merges f [ty1; ...; ty_n] = ty1 ++ ty2 ++ ... ++ tyn] where [++] is [merge f]  *)
+
+
+(** {1 Simple type} *)
 
 (** Simple type is defined as general type (['annot ty]) with no extra annotations *)
 type simple_ty = unit ty
@@ -91,12 +104,7 @@ val show_simple_argty : simple_argty -> string
 val simple_argty_of_sexp : Sexplib0.Sexp.t -> simple_argty
 val sexp_of_simple_argty : simple_argty -> Sexplib0.Sexp.t
 
+(** {2 Non-derived functions }*)
+
 val to_simple : 'annot ty -> simple_ty
 (** Deletes the annotations *)
-
-val mk_arrows : 'annot ty arg Id.t list -> 'annot ty -> 'annot ty
-val decompose_arrow : 'annot ty -> 'annot ty arg Id.t list * 'annot
-
-
-val merge : ('annot -> 'annot -> 'annot) -> 'annot ty -> 'annot ty -> 'annot ty
-val merges : ('annot -> 'annot -> 'annot) -> 'annot ty list -> 'annot ty
