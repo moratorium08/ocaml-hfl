@@ -1,10 +1,12 @@
 (** Module for HFL(Z) syntax trees *)
 
 
+(** {1 Pseudo Formula} *)
+
 module Sugar :
   sig
-  (** Module for (pseudo) formulas that may contain not *)
-  (** These not should be considered as a macro which will later be expanded *)
+  (** Module for (pseudo) formulas that may contain negation *)
+  (** These negations should be considered as macros which will later be expanded *)
 
     type 'ty t =
         Bool of bool
@@ -94,7 +96,10 @@ module Sugar :
     val decompose_abs : 'a t -> 'a Type.arg Id.t list * 'a t
   end
 
-(** HFL(Z) syntax tree.
+(** {1 Body Formula} *)
+
+ (** HFL(Z) body formuala.
+ The variables appearing in the syntax tree caree type information.
  In most cases, the parameter ['ty] will be instantiated as {!Type.simple_ty} *)
 type 'ty t =
     Bool of bool
@@ -108,7 +113,7 @@ type 'ty t =
   | Arith of Arith.t
   | Pred of Formula.pred * Arith.t list
 
-(** Derived functions *)
+(** {2 Derived functions} *)
 
 val equal : ('ty -> 'ty -> bool) -> 'ty t -> 'ty t -> bool
 val compare : ('ty -> 'ty -> int) -> 'ty t -> 'ty t -> int
@@ -120,6 +125,16 @@ val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 val t_of_sexp : (Sexplib0.Sexp.t -> 'ty) -> Sexplib0.Sexp.t -> 'ty t
 val sexp_of_t : ('ty -> Sexplib0.Sexp.t) -> 'ty t -> Sexplib0.Sexp.t
 
+(** {1 HES} *)
+
+(** We use an equational presentation for HFL(Z) formulas.
+    Each equation is of the form {m X : \tau =_{\alpha} \varphi},
+    where {m \alpha} is either {m \mu} or {m \nu}.
+    Hierarchial equational system (HES) is a finite set of these equations.
+*)
+
+(** {2 Equation}*)
+
 (** Equation of HES. That is, {m X : \tau =_{\alpha} \varphi}. [var] is {m X : \tau}, [body] is {m \varphi} and [fix] is {m \alpha}. *)
 type 'ty hes_rule = {
   var : 'ty Id.t;
@@ -127,7 +142,7 @@ type 'ty hes_rule = {
   fix : Fixpoint.t;
 }
 
-(** Derived functions *)
+(** {3 Derived functions} *)
 
 val equal_hes_rule :
   ('ty -> 'ty -> bool) ->
@@ -150,13 +165,17 @@ val hes_rule_of_sexp :
 val sexp_of_hes_rule :
   ('ty -> Sexplib0.Sexp.t) -> 'ty hes_rule -> Sexplib0.Sexp.t
 
+(** {3 Non-derived functions} *)
+
 val lookup_rule : 'ty Id.t -> 'ty hes_rule list -> 'ty hes_rule
 
 
-(** HES, which is a pair of a goal formula and equations *)
+(** {2 Datatype of HES} *)
+
+(** HES which is a pair of a goal formula and equations *)
 type 'ty hes = 'ty t * 'ty hes_rule list
 
-(** Derived functions *)
+(** {3 Derived functions} *)
 
 val equal_hes : ('ty -> 'ty -> bool) -> 'ty hes -> 'ty hes -> bool
 val compare_hes : ('ty -> 'ty -> int) -> 'ty hes -> 'ty hes -> int
@@ -171,7 +190,9 @@ val fold_hes : ('a -> 'b -> 'a) -> 'a -> 'b t * 'b hes_rule list -> 'a
 val hes_of_sexp : (Sexplib0.Sexp.t -> 'ty) -> Sexplib0.Sexp.t -> 'ty hes
 val sexp_of_hes : ('ty -> Sexplib0.Sexp.t) -> 'ty hes -> Sexplib0.Sexp.t
 
-(** Constructors *)
+(** {1 Methods} *)
+
+(** {2 Constructors} *)
 
 val mk_bool : bool -> 'ty t
 val mk_var : 'ty Id.t -> 'ty t
@@ -193,8 +214,13 @@ val mk_abs : 'ty Type.arg Id.t -> 'ty t -> 'ty t
 (** [mk_abss [x1; ...; xn] e = \x1 ... xn . e ] *)
 val mk_abss : 'ty Type.arg Id.t list -> 'ty t -> 'ty t
 
+(** {2 Decomposers} *)
+
 val decompose_abs : 'ty t -> 'ty Type.arg Id.t List.t * 'ty t
 val decompose_app : 'ty t -> 'ty t * 'ty t list
+
+
+(** {2 Others} *)
 
 (** Desugar "not" from a formula.
     This function may fail and raise an error because not all negations can be represented as a macro *)
