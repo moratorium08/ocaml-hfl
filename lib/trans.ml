@@ -184,7 +184,7 @@ module Reduce = struct
         let _, ls =
           List.fold vs ~init:(rG, []) ~f:begin fun (rg,ls) v ->
             let rg2, l = rdfs rg v [] in
-            if l == []
+            if List.is_empty l
             then rg2, ls
             else rg2, l::ls
           end

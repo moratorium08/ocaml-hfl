@@ -1,6 +1,6 @@
 open Base
 
-include Format
+include Stdlib.Format
 include Fmt
 
 let (^^) = Stdlib.(^^)

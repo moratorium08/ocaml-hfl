@@ -152,5 +152,5 @@ let fpreds formula =
   fvs formula
   |> IdSet.filter ~f:begin fun x -> (* filter nonterminals *)
     let c = String.get x.Id.name 0 in
-    c == Char.uppercase c (* XXX ad hoc *)
+    Char.equal c @@  Char.uppercase c (* XXX ad hoc *)
   end
