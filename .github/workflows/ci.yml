@@ -30,4 +30,4 @@ jobs:
         run: opam install . --deps-only
 
       - name: Build
-        run: opam exec -- dune build -p hfl
+        run: opam exec -- dune build -p hfl @doc
