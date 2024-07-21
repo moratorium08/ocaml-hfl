@@ -118,6 +118,7 @@ module Typing = struct
       end
     with Alias -> `Alias
 
+  (* Private *)
   let rec write : tyvar option ref -> tyvar -> unit =
     fun r tv -> match tv with
       | TvInt | TvBool | TvArrow _ -> r := Some tv
@@ -445,6 +446,8 @@ end
 
 open Type
 
+(* Private *)
+(* Even if this should be public it should be in Hflz.Sugar *)
 let rename_simple_ty_rule
       : simple_ty Hflz.Sugar.hes_rule
      -> simple_ty Hflz.Sugar.hes_rule =
@@ -460,6 +463,8 @@ let rename_simple_ty_rule
     let sty' = mk_arrows ty_vars' (TyBool()) in
     { rule with var = { rule.var with ty = sty' } }
 
+(* Private *)
+(* Even if this should be public it should be in Hflz.Sugar *)
 let rename_ty_body : simple_ty Hflz.Sugar.hes -> simple_ty Hflz.Sugar.hes =
   fun hes ->
     let rec term : simple_ty IdMap.t -> simple_ty Hflz.Sugar.t -> simple_ty Hflz.Sugar.t =
@@ -498,6 +503,7 @@ let rename_ty_body : simple_ty Hflz.Sugar.hes -> simple_ty Hflz.Sugar.hes =
     term env entry,
     List.map rules ~f:(rule env)
 
+(* TODO It's unclear why we need the env to be such a complicated type *)
 let to_typed (raw_hes, (env : (string * Formula.t list ty) list)) =
   let typed_hes =
     raw_hes
