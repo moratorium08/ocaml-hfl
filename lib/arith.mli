@@ -20,9 +20,9 @@ val sexp_of_op : op -> Sexplib0.Sexp.t
 
 (** Arithmetic expresion parametrized by variable type *)
 type 'var gen_t =
-    Int of Base.int
+    Int of int
   | Var of 'var
-  | Op of op * 'var gen_t Base.list
+  | Op of op * 'var gen_t list
 
 (* Derived functins: *)
 
