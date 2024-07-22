@@ -33,23 +33,23 @@ module Prec :
   sig
   (** Module for operator precedence *)
 
-    type t = int
-    val succ : int -> int
-    val succ_if : bool -> int -> int
-    val zero : int
-    val arrow : int
-    val abs : int
-    val or_ : int
-    val and_ : int
-    val eq : int
-    val add : int
-    val mult : int
-    val neg : int
-    val app : int
-    val of_op : Arith.op -> int
+    type t
+    val succ : t -> t
+    val succ_if : bool -> t -> t
+    val zero : t
+    val arrow : t
+    val abs : t
+    val or_ : t
+    val and_ : t
+    val eq : t
+    val add : t
+    val mult : t
+    val neg : t
+    val app : t
+    val of_op : Arith.op -> t
     val op_is_leftassoc : Arith.op -> bool
     val op_is_rightassoc : Arith.op -> bool
-    val of_pred : 'a -> int
+    val of_pred : 'a -> t
   end
 
 type prec = Prec.t
