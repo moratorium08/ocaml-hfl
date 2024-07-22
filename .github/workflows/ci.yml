@@ -27,7 +27,9 @@ jobs:
 
 
       - name: Install dependencies
-        run: opam install . --deps-only
+        run: |
+          opam install . --deps-only
+          opam install odoc
 
       - name: Build
         run: opam exec -- dune build -p hfl @doc
