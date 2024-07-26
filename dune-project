@@ -1,4 +1,4 @@
-(lang dune 3.0)
+(lang dune 3.7)
 (using menhir 2.0)
 (name hfl)
 (generate_opam_files)
