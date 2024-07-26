@@ -65,7 +65,7 @@ let show_paren b ppf fmt =
     then Fmt.pf ppf ("(" ^^ fmt ^^ ")")
     else Fmt.pf ppf fmt
 
-let void _ v = Formula.Void.absurd v
+let void _ v = Nothing.unreachable_code v
 let void_ = ignore_prec void
 
 let id ppf x = Fmt.pf ppf "%s" (Id.to_string x)

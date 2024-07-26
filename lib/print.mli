@@ -62,8 +62,8 @@ val ignore_prec : 'a t -> 'a t_with_prec
 val show_paren :
   bool -> formatter -> ('a, formatter, unit) Base.format -> 'a
 
-val void : Formula.Void.t t
-val void_ : Formula.Void.t t_with_prec
+val void : Base.Nothing.t t
+val void_ : Base.Nothing.t t_with_prec
 val id : 'ty Id.t t
 val id_ : [ `Int ] Id.t t_with_prec
 val op : Arith.op t

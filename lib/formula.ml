@@ -28,10 +28,8 @@ let negate_pred = function
   | Lt  -> Ge
   | Ge  -> Lt
 
-module Void = Util.Void
-
 (* type t = ((string * [`Pos|`Neg]), [`Int] Id.t) gen_t *)
-type t = (Void.t, [`Int] Id.t) gen_t
+type t = (Nothing.t, [`Int] Id.t) gen_t
   [@@deriving eq,ord,show,iter,map,fold,sexp]
 let hash (x : t) : int = Sexp.hash (sexp_of_t x)
 
@@ -61,7 +59,7 @@ let rec mk_not' (negate_var : 'bvar -> 'bvar) = function
   | Or  fs -> And (List.map fs ~f:(mk_not' negate_var))
   | And fs -> Or  (List.map fs ~f:(mk_not' negate_var))
   | Pred(pred, as') -> Pred(negate_pred pred, as')
-let mk_not f = mk_not' Void.absurd f
+let mk_not f = mk_not' Nothing.unreachable_code f
 
 let mk_implies a b = mk_or (mk_not a) b
 

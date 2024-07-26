@@ -65,14 +65,12 @@ val sexp_of_gen_t :
 
 (** {1 Formula }*)
 
-(** Formulas are generalized formulas with ['bvar = void].
+(** Formulas are generalized formulas with ['bvar] being the empty type.
     That is, we do not allow the use of [Var of 'bvar].
     This is not a problem because arithmetic expressions already contain variables *)
 
-module Void = Util.Void
-
 (** Type for formuals *)
-type t = (Void.t, [ `Int ] Id.t) gen_t
+type t = (Base.Nothing.t, [ `Int ] Id.t) gen_t
 
 (** {2 Derived functions} *)
 
@@ -100,9 +98,9 @@ val mk_or : ('a, 'b) gen_t -> ('a, 'b) gen_t -> ('a, 'b) gen_t
 val mk_ors : ('a, 'b) gen_t list -> ('a, 'b) gen_t
 val mk_pred : pred -> 'a Arith.gen_t list -> ('b, 'a) gen_t
 val mk_not' : ('bvar -> 'bvar) -> ('bvar, 'a) gen_t -> ('bvar, 'a) gen_t
-val mk_not : (Void.t, 'a) gen_t -> (Void.t, 'a) gen_t
+val mk_not : (Base.Nothing.t, 'a) gen_t -> (Base.Nothing.t, 'a) gen_t
 val mk_implies :
-  (Void.t, 'a) gen_t -> (Void.t, 'a) gen_t -> (Void.t, 'a) gen_t
+  (Base.Nothing.t, 'a) gen_t -> (Base.Nothing.t, 'a) gen_t -> (Base.Nothing.t, 'a) gen_t
 
 (** {2 Others }*)
 
