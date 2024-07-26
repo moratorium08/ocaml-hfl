@@ -230,7 +230,7 @@ let hflz_hes_rule format_ty_ ppf (rule : 'ty Hflz.hes_rule) =
       fixpoint rule.fix
       (hflz format_ty_) rule.body
 
-let hflz_hes format_ty_ ppf (entry, rules) =
+let hflz_hes format_ty_ ppf hes =
   Fmt.pf ppf "@[<v>%a@ s.t.@ %a@]"
-    (hflz format_ty_) entry
-    (Fmt.list (hflz_hes_rule format_ty_)) rules
+    (hflz format_ty_) (Hflz.top_formula_of hes)
+    (Fmt.list (hflz_hes_rule format_ty_)) (Hflz.equations_of hes)

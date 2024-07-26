@@ -38,13 +38,18 @@ let hflz : 'a Hflz.t -> 'a Hflz.t =
 let hflz_hes_rule : 'a Hflz.hes_rule -> 'a Hflz.hes_rule =
   fun rule -> { rule with body = hflz rule.body }
 let hflz_hes : ?inline:bool -> simple_ty Hflz.hes -> simple_ty Hflz.hes =
-  fun ?(inline=true) rules ->
-  rules
-  |> begin
-    if inline
-    then Reduce.Hflz.inline
-    else (fun x -> x)
-  end
+  fun ?(inline=true) hes ->
+  let hes =
+    hes
+    |> begin
+      if inline
+      then Reduce.Hflz.inline
+      else (fun x -> x)
+    end
+  in
+  let main = Hflz.top_formula_of hes in
+  let rules = List.map ~f:hflz_hes_rule (Hflz.equations_of hes) in
+  Hflz.mk_hes main rules
 
 let rec is_true_def =
   fun phi -> match phi with

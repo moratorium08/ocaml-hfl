@@ -67,7 +67,9 @@ module Hflz = struct
       ls
   end
   let inline : simple_ty S.Hflz.hes -> simple_ty S.Hflz.hes =
-    fun (main, rules) ->
+    fun hes ->
+    let main = S.Hflz.top_formula_of hes in
+    let rules = S.Hflz.equations_of hes in
     let module Scc = Scc(Id.Key) in
     let fpreds_of_main = S.Hflz.fpreds main in
     let dep_graph : Scc.graph =
@@ -137,5 +139,5 @@ module Hflz = struct
       end
     in
     let simplified_main = Subst.Hflz.hflz inline_map main in
-    (simplified_main, simplified_rules)
+    S.Hflz.mk_hes simplified_main simplified_rules
 end

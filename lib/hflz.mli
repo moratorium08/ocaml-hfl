@@ -173,7 +173,7 @@ val lookup_rule : 'ty Id.t -> 'ty hes_rule list -> 'ty hes_rule
 (** {2 Datatype of HES} *)
 
 (** HES which is a pair of a goal formula and equations *)
-type 'ty hes = 'ty t * 'ty hes_rule list
+type 'ty hes
 
 (** {3 Derived functions} *)
 
@@ -214,11 +214,14 @@ val mk_abs : 'ty Type.arg Id.t -> 'ty t -> 'ty t
 (** [mk_abss [x1; ...; xn] e = \x1 ... xn . e ] *)
 val mk_abss : 'ty Type.arg Id.t list -> 'ty t -> 'ty t
 
+val mk_hes : 'ty t -> 'ty hes_rule list -> 'ty hes
+
 (** {2 Decomposers} *)
 
 val decompose_abs : 'ty t -> 'ty Type.arg Id.t List.t * 'ty t
 val decompose_app : 'ty t -> 'ty t * 'ty t list
-
+val top_formula_of : 'ty hes -> 'ty t
+val equations_of : 'ty hes -> 'ty hes_rule list
 
 (** {2 Others} *)
 

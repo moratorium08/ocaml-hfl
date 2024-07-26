@@ -65,7 +65,7 @@ let lookup_rule f hes =
 type 'ty hes = 'ty t * 'ty hes_rule list
     [@@deriving eq,ord,show,iter,map,fold,sexp]
 
-(* Construction *)
+ (* Construction *)
 let mk_bool b = Bool b
 
 let mk_var x = Var x
@@ -88,6 +88,8 @@ let mk_apps t ts = List.fold_left ts ~init:t ~f:mk_app
 let mk_abs x t = Abs(x, t)
 let mk_abss xs t = List.fold_right xs ~init:t ~f:mk_abs
 
+let mk_hes f fs = (f, fs)
+
 (* Decomposition *)
 let decompose_abs =
   let rec go acc phi = match phi with
@@ -101,6 +103,9 @@ let decompose_app =
     | _ -> (phi, acc)
   in
   fun phi -> go phi []
+
+let top_formula_of hes = fst hes
+let equations_of hes = snd hes
 
 let desugar_formula (formula : 'a Sugar.t) : 'a t =
   let rec neg (f : 'a Sugar.t) : 'a t = match f with

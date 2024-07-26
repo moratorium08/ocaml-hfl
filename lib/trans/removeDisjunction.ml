@@ -45,9 +45,9 @@ let rec check_body in_disj = function
 let check_hes_rule (rule:Type.simple_ty Hflz.hes_rule)
   = check_body false rule.body
 
-let rec check = function
-  | [] -> false
-  | x::xs -> check_hes_rule x || check xs
+let rec check hes =
+  check_body false (Hflz.top_formula_of hes)
+  || List.exists (Hflz.equations_of hes) check_hes_rule
 
 let tmp_arg =
   Type.TyBool ()
@@ -103,19 +103,15 @@ let rec translate_body body =
 let translate_hes_rule (rule : Type.simple_ty Hflz.hes_rule) =
   {rule with body=translate_body rule.body}
 
+let translate_top top =
+  Hflz.App(translate_body top, Bool false)
 
-let rec translate_aux top (rule:Type.simple_ty Hflz.hes_rule) =
-  if Id.eq rule.var top then
-    let body = Hflz.App(rule.body, Bool false) in
-    {rule with body}
-  else
-    let ty = lift_ty rule.var.ty in
-    let var = {rule.var with ty} in
-    {rule with var}
-
-let f rules top = if check rules then
+let f hes =
+  if check hes then
     (* TODO Switch to Stdio or use the Logger? *)
-    (Stdlib.Printf.printf "[REMOVE_DISJUNCTION]\n";
-    List.map ~f:(fun x -> x |> translate_hes_rule |> translate_aux top) rules)
+    let top_formula = translate_top (Hflz.top_formula_of hes) in
+    let rules = List.map ~f:translate_hes_rule (Hflz.equations_of hes) in
+    let _ = Stdlib.Printf.printf "[REMOVE_DISJUNCTION]\n" in
+    Hflz.mk_hes top_formula rules
   else
-    (Stdlib.Printf.printf "[NO_DISJUNCTION]\n"; rules)
+    (Stdlib.Printf.printf "[NO_DISJUNCTION]\n"; hes)
