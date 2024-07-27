@@ -89,28 +89,4 @@ module Hflz = struct
       | Arith a        -> Arith (arith env a)
       | Pred (p,as')   -> Pred(p, List.map ~f:(arith env) as')
       | Bool _         -> phi
-
-  (** Invariant: phi must have type TyBool *)
-  let reduce_head : 'ty S.Hflz.hes_rule list -> 'ty S.Hflz.t -> 'ty S.Hflz.t =
-    fun hes phi -> match phi with
-      | Var x ->
-        begin match x.ty, List.find hes ~f:(fun rule -> S.Id.eq x rule.var) with
-          | TyBool _, Some phi -> phi.body
-          | _ -> invalid_arg "reduce_head"
-          end
-      | App(_, _) ->
-          let head, args = S.Hflz.decompose_app phi in
-          let vars, body =
-            match S.Hflz.decompose_abs head with
-            | vars0, Var x ->
-              let x_rule =
-                List.find_exn hes ~f:(fun rule -> S.Id.eq x rule.var)
-              in
-              let vars1, body = S.Hflz.decompose_abs x_rule.body in
-              vars0@vars1, body
-            | vars, body -> vars, body
-          in
-          let env = IdMap.of_list @@ List.zip_exn vars args in
-          hflz env body
-      | _ -> invalid_arg "reduce_head"
 end
