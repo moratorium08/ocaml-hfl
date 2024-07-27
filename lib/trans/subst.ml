@@ -2,11 +2,9 @@ open Base
 open Type
 open TransUtil
 
-module S = TransUtil.ModuleWrapper
-
 type 'x env = 'x IdMap.t
-module Id = struct
-  let rec arith : [`Int ] S.Id.t env -> S.Arith.t -> S.Arith.t =
+module Id__ = struct
+  let rec arith : [`Int ] Id.t env -> Arith.t -> Arith.t =
     fun env a ->
       match a with
       | Int _ -> a
@@ -17,7 +15,7 @@ module Id = struct
         end
       | Op(op, as') -> Op(op, List.map ~f:(arith env) as')
 
-  let rec formula : [`Int ] S.Id.t IdMap.t -> S.Formula.t -> S.Formula.t =
+  let rec formula : [`Int ] Id.t IdMap.t -> Formula.t -> Formula.t =
     fun env p ->
     match p with
         | Pred(prim, as') -> Pred(prim, List.map as' ~f:(arith env))
@@ -28,41 +26,41 @@ module Id = struct
 end
 
   (* TODO IdMapを使う *)
-module Arith = struct
+module Arith__ = struct
   let rec arith_
     : ('var -> 'var -> bool)
       -> 'var
-      -> 'var S.Arith.gen_t
-      -> 'var S.Arith.gen_t
-      -> 'var S.Arith.gen_t =
+      -> 'var Arith.gen_t
+      -> 'var Arith.gen_t
+      -> 'var Arith.gen_t =
     fun equal x a a' ->
       match a' with
       | Int _ -> a'
       | Var x' -> if equal x x' then a else a'
       | Op(op, as') -> Op(op, List.map ~f:(arith_ equal x a) as')
-  let arith : 'a. 'a S.Id.t -> S.Arith.t -> S.Arith.t -> S.Arith.t =
-    fun x a a' -> arith_ S.Id.eq {x with ty=`Int} a a'
+  let arith : 'a. 'a Id.t -> Arith.t -> Arith.t -> Arith.t =
+    fun x a a' -> arith_ Id.eq {x with ty=`Int} a a'
 
   let rec formula_
     : ('var -> 'var -> bool)
       -> 'var
-      -> 'var S.Arith.gen_t
-      -> ('bvar,'var) S.Formula.gen_t
-      -> ('bvar,'var) S.Formula.gen_t =
+      -> 'var Arith.gen_t
+      -> ('bvar,'var) Formula.gen_t
+      -> ('bvar,'var) Formula.gen_t =
     fun equal x a p ->
     match p with
     | Pred(prim, as') -> Pred(prim, List.map as' ~f:(arith_ equal x a))
     | And ps -> And(List.map ~f:(formula_ equal x a) ps)
     | Or  ps -> Or (List.map ~f:(formula_ equal x a) ps)
     | _ -> p
-  let formula : 'a. 'a S.Id.t -> S.Arith.t -> S.Formula.t -> S.Formula.t =
-    fun x a p -> formula_ S.Id.eq {x with ty = `Int} a p
+  let formula : 'a. 'a Id.t -> Arith.t -> Formula.t -> Formula.t =
+    fun x a p -> formula_ Id.eq {x with ty = `Int} a p
 
 end
 
-module Hflz = struct
+module Hflz__ = struct
 
-  let rec arith : 'ty S.Hflz.t env -> S.Arith.t -> S.Arith.t =
+  let rec arith : 'ty Hflz.t env -> Arith.t -> Arith.t =
     fun env a -> match a with
       | Int _ -> a
       | Var x ->
@@ -73,7 +71,7 @@ module Hflz = struct
         end
       | Op(op, as') -> Op(op, List.map ~f:(arith env) as')
 
-  let rec hflz : 'ty S.Hflz.t env -> 'ty S.Hflz.t -> 'ty S.Hflz.t =
+  let rec hflz : 'ty Hflz.t env -> 'ty Hflz.t -> 'ty Hflz.t =
     fun env phi -> match phi with
       | Var x ->
         begin match IdMap.lookup env x with
@@ -90,3 +88,7 @@ module Hflz = struct
       | Pred (p,as')   -> Pred(p, List.map ~f:(arith env) as')
       | Bool _         -> phi
 end
+
+module Id = Id__
+module Arith = Arith__
+module Hflz = Hflz__
