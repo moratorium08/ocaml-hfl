@@ -36,7 +36,7 @@ let op_func = function
   | Sub -> (-)
   | Mult -> ( * )
   | Div -> (/)
-  | Mod -> (mod)
+  | Mod -> (%)
 
 let rec evaluate_opt x = match x with
   | Op(op, x::xs) -> 
