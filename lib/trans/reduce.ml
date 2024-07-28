@@ -2,10 +2,9 @@ open Base
 open Type
 open TransUtil
 
-module S = TransUtil.ModuleWrapper
 
-module Hflz = struct
-  let rec beta : 'a S.Hflz.t -> 'a S.Hflz.t = function
+module Hflz__ = struct
+  let rec beta : 'a Hflz.t -> 'a Hflz.t = function
     | Or (phi1, phi2) -> Or (beta phi1, beta phi2)
     | And(phi1, phi2) -> And(beta phi1, beta phi2)
     | App(phi1, phi2) ->
@@ -66,16 +65,16 @@ module Hflz = struct
       in
       ls
   end
-  let inline : simple_ty S.Hflz.hes -> simple_ty S.Hflz.hes =
+  let inline : simple_ty Hflz.hes -> simple_ty Hflz.hes =
     fun hes ->
-    let main = S.Hflz.top_formula_of hes in
-    let rules = S.Hflz.equations_of hes in
+    let main = Hflz.top_formula_of hes in
+    let rules = Hflz.equations_of hes in
     let module Scc = Scc(Id.Key) in
-    let fpreds_of_main = S.Hflz.fpreds main in
+    let fpreds_of_main = Hflz.fpreds main in
     let dep_graph : Scc.graph =
       Map.of_alist_exn (module Id.Key)  @@ List.map rules ~f:begin fun rule ->
         let id = rule.var in
-        let dep = S.Hflz.fpreds rule.body
+        let dep = Hflz.fpreds rule.body
         in Id.remove_ty id ,dep
       end
     in
@@ -139,5 +138,8 @@ module Hflz = struct
       end
     in
     let simplified_main = Subst.Hflz.hflz inline_map main in
-    S.Hflz.mk_hes simplified_main simplified_rules
+    Hflz.mk_hes simplified_main simplified_rules
 end
+
+
+module Hflz = Hflz__

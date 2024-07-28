@@ -1,6 +1,6 @@
 (** Module for reducing formulas *)
 
-module Hflz :
+module Hflz__ :
   sig
 
     (** Beta-reduces redexes of a body formula.
@@ -12,3 +12,5 @@ module Hflz :
     (** Inlines predicate variables *)
     val inline : Type.simple_ty Hflz.hes -> Type.simple_ty Hflz.hes
   end
+
+module Hflz = Hflz__
