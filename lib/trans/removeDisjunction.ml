@@ -45,9 +45,9 @@ let rec check_body in_disj = function
 let check_hes_rule (rule:Type.simple_ty Hflz.hes_rule)
   = check_body false rule.body
 
-let rec check hes =
+let check hes =
   check_body false (Hflz.top_formula_of hes)
-  || List.exists (Hflz.equations_of hes) check_hes_rule
+  || List.exists (Hflz.equations_of hes) ~f:check_hes_rule
 
 let tmp_arg =
   Type.TyBool ()
