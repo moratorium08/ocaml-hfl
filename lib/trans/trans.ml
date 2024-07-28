@@ -1,3 +1,5 @@
+(** Collection of modules for transforming HFL formulas *)
+
 open Base
 open Type
 
