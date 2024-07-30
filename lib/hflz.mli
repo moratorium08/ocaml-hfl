@@ -63,7 +63,7 @@ module Sugar :
       (Sexplib0.Sexp.t -> 'ty) -> Sexplib0.Sexp.t -> 'ty hes_rule
     val sexp_of_hes_rule :
       ('ty -> Sexplib0.Sexp.t) -> 'ty hes_rule -> Sexplib0.Sexp.t
-    type 'ty hes = 'ty t * 'ty hes_rule list
+    type 'ty hes
     val equal_hes :
       ('ty -> 'ty -> bool) ->
       'ty hes -> 'ty hes -> bool
@@ -91,9 +91,11 @@ module Sugar :
     val mk_var : 'a Id.t -> 'a t
     val mk_abs : 'a Type.arg Id.t -> 'a t -> 'a t
     val mk_abss : 'a Type.arg Id.t list -> 'a t -> 'a t
-
+    val mk_hes : 'ty t -> 'ty hes_rule list -> 'ty hes
 
     val decompose_abs : 'a t -> 'a Type.arg Id.t list * 'a t
+    val top_formula_of : 'ty hes -> 'ty t
+    val equations_of : 'ty hes -> 'ty hes_rule list
   end
 
 (** {1 Body Formula} *)

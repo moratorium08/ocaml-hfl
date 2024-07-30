@@ -174,10 +174,7 @@ module Typing :
           unit Hflz.Sugar.t -> Type.simple_ty Hflz.Sugar.t
         method ty : string -> tyvar -> Type.simple_ty
       end
-    val to_typed :
-      hes ->
-      Type.simple_ty Hflz.Sugar.t *
-      Type.simple_ty Hflz.Sugar.hes_rule list
+    val to_typed : hes -> Type.simple_ty Hflz.Sugar.hes
   end
 
 (** Type checks an untyped HES.

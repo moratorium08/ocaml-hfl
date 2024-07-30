@@ -31,11 +31,15 @@ module Sugar = struct
   let mk_var x : 'a t = Var x
   let mk_abs x t = Abs(x, t)
   let mk_abss xs t = List.fold_right xs ~init:t ~f:mk_abs
+  let mk_hes top rules = top, rules
+
   let decompose_abs =
     let rec go acc phi = match phi with
       | Abs(x, phi) -> go (x::acc) phi
       | _ -> (List.rev acc, phi)
     in fun phi -> go [] phi
+  let top_formula_of hes = fst hes
+  let equations_of hes = snd hes
 end
 
 type 'ty t =

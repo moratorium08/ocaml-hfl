@@ -359,7 +359,7 @@ module Typing = struct
         in
         match List.map hes ~f:(self#hes_rule id_env) with
         | [] -> failwith "raw_hflz: hes"
-        | {body=entry; _}::rules -> (entry, rules)
+        | {body=entry; _}::rules -> Hflz.Sugar.mk_hes entry rules
   end
   exception IntType
 
@@ -416,7 +416,10 @@ module Typing = struct
         { var; body; fix = rule.fix }
 
     method hes : unit Hflz.Sugar.hes -> simple_ty Hflz.Sugar.hes =
-      fun (entry, rules) -> self#term entry, List.map rules ~f:self#hes_rule
+      fun hes ->
+      let top = self#term (Hflz.Sugar.top_formula_of hes) in
+      let rules = List.map (Hflz.Sugar.equations_of hes) ~f:self#hes_rule in
+      Hflz.Sugar.mk_hes top rules
   end
 
   let to_typed rhes =
@@ -427,8 +430,8 @@ module Typing = struct
     in
     let deref     = new deref ty_env in
     let hes       = deref#hes annotated in
-    match hes with
-    | entry, main::rest ->
+    match Hflz.Sugar.equations_of hes with
+    | main::rest ->
         (* dirty hack for compatibility with Suzuki's impl*)
         let ub_ints =
           List.map (Map.to_alist unbound_ints) ~f:begin
@@ -440,7 +443,7 @@ module Typing = struct
           let body = Hflz.Sugar.mk_abss ub_ints main.body in
           { main with var; body }
         in
-        entry, main :: rest
+        Hflz.Sugar.mk_hes (Hflz.Sugar.top_formula_of hes)  (main :: rest)
     | _ -> assert false
 end
 
@@ -495,31 +498,34 @@ let rename_ty_body : simple_ty Hflz.Sugar.hes -> simple_ty Hflz.Sugar.hes =
     in
     let env =
       IdMap.of_list @@
-        List.map (snd hes) ~f:begin fun rule ->
+        List.map (Hflz.Sugar.equations_of hes) ~f:begin fun rule ->
           rule.var, rule.var.ty
         end
     in
-    let (entry, rules) = hes in
-    term env entry,
-    List.map rules ~f:(rule env)
+    let entry = term env (Hflz.Sugar.top_formula_of hes) in
+    let rules = List.map (Hflz.Sugar.equations_of hes) ~f:(rule env) in
+    Hflz.Sugar.mk_hes entry rules
 
 (* TODO It's unclear why we need the env to be such a complicated type *)
 let to_typed (raw_hes, (env : (string * Formula.t list ty) list)) =
   let typed_hes =
     raw_hes
     |> Typing.to_typed
-    |> (fun (entry, rules) -> entry, List.map ~f:rename_simple_ty_rule rules)
+    |> (fun hes ->
+        let entry = Hflz.Sugar.top_formula_of hes in
+        let rules = List.map ~f:rename_simple_ty_rule (Hflz.Sugar.equations_of hes) in
+        Hflz.Sugar.mk_hes entry rules)
   in
   let () = (* check env *)
     let unknown_nt =
       List.find env ~f:begin fun (f,_) ->
-        List.for_all (snd typed_hes) ~f:(fun r -> not @@ String.equal r.var.name f)
+        List.for_all (Hflz.Sugar.equations_of typed_hes) ~f:(fun r -> not @@ String.equal r.var.name f)
       end
     in
     match unknown_nt with
     | None -> ()
     | Some (f,_) -> Exception.fatal @@ "ENV: There is no NT named " ^ f
   in
-  let gamma = IdMap.of_list @@ List.map (snd typed_hes) ~f:(fun rule -> rule.var, rule.var.ty)
+  let gamma = IdMap.of_list @@ List.map (Hflz.Sugar.equations_of typed_hes) ~f:(fun rule -> rule.var, rule.var.ty)
  in
  rename_ty_body typed_hes, gamma
