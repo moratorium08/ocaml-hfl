@@ -1,7 +1,7 @@
 (** Module for printing which extends [Stdlib.Format] *)
 
 (** ['a Print.t] is simply a type for the formatter of type ['a].
-    That is, ['a Print.t = 'a t = Format.formatter -> 'a -> unit ] *)
+    That is, ['a Print.t = 'a Fmt.t = Format.formatter -> 'a -> unit ] *)
 (** This module includes [Fmt] from the fmt library *)
 
 (** {1 [Stdlib.Format] and [Fmt]} *)
