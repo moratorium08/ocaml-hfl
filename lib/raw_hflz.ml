@@ -112,7 +112,7 @@ module Typing = struct
         Log.err begin fun m -> m ~header:"Occur Check"
           "r=%a; tv=%a" pp_hum_tyvar (TvRef (-1, r)) pp_hum_tyvar tv;
         end;
-        Exception.fatal "Recursive type is unsupported"
+        error "Recursive type is unsupported"
       end else begin
         `Ok
       end
@@ -176,7 +176,7 @@ module Typing = struct
             pp_hum_tyvar x
             pp_hum_tyvar y
           );
-          Exception.fatal @@ Fmt.str "ill-typed"
+          error @@ Print.str "ill-typed"
 
 
   type id_env = (string, int, String.comparator_witness) Map.t   (* name to id *)
@@ -222,7 +222,9 @@ module Typing = struct
             in
             self#add_ty_env x TvInt; Arith.mk_var x
         | Op (op, as') -> Op (op, List.map ~f:(self#arith id_env) as')
-        | _ -> failwith "annot.arith"
+        | _ ->
+          let emsg = Print.str "term %a is expected to be an arithmetic expression" pp_raw_hflz a in
+          error emsg
 
     method term : id_env -> raw_hflz -> tyvar -> unit Hflz.Sugar.t =
       fun id_env psi tv ->
@@ -358,7 +360,7 @@ module Typing = struct
           end
         in
         match List.map hes ~f:(self#hes_rule id_env) with
-        | [] -> failwith "raw_hflz: hes"
+        | [] -> error "At least one equation needs to be defined"
         | {body=entry; _}::rules -> Hflz.Sugar.mk_hes entry rules
   end
   exception IntType
@@ -385,11 +387,11 @@ module Typing = struct
 
     method id : unit Id.t -> simple_ty Id.t =
       fun x -> match Map.find ty_env x.id with
-        | None -> failwith @@ Fmt.str "%s" (Id.to_string x)
+        | None -> error @@ Print.str "Unbound variable %s" (Id.to_string x)
         | Some ty -> { x with ty = self#ty (Id.to_string x) ty }
     method arg_id : unit arg Id.t -> simple_ty arg Id.t =
       fun x -> match Map.find ty_env x.id with
-        | None -> failwith @@ Fmt.str "%s" (Id.to_string x)
+        | None -> error @@ Print.str "Unbound variable %s" (Id.to_string x)
         | Some tv -> { x with ty = self#arg_ty (Id.to_string x) tv }
 
     method term : unit Hflz.Sugar.t -> simple_ty Hflz.Sugar.t = function
@@ -524,7 +526,7 @@ let to_typed (raw_hes, (env : (string * Formula.t list ty) list)) =
     in
     match unknown_nt with
     | None -> ()
-    | Some (f,_) -> Exception.fatal @@ "ENV: There is no NT named " ^ f
+    | Some (f,_) -> Typing.error @@ "ENV: There is no NT named " ^ f
   in
   let gamma = IdMap.of_list @@ List.map (Hflz.Sugar.equations_of typed_hes) ~f:(fun rule -> rule.var, rule.var.ty)
  in
