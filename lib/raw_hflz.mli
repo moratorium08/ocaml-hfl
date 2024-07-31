@@ -114,7 +114,6 @@ module Typing :
 
     val log_src : Logs.src
     module Log : Logs.LOG
-    exception Error of string
     val error : string -> 'a
 
     (** Simple type extended with type variables *)
@@ -132,7 +131,6 @@ module Typing :
     val new_tyvar : unit -> tyvar
 
 
-    exception Alias
     type occur_check_result = [ `Alias | `Ok ]
     val occur_check : tyvar option ref -> tyvar -> occur_check_result
     val unify : tyvar -> tyvar -> unit
@@ -153,7 +151,6 @@ module Typing :
         method term :
           id_env -> raw_hflz -> tyvar -> unit Hflz.Sugar.t
       end
-    exception IntType
     class deref :
       ty_env ->
       object

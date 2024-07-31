@@ -1,5 +1,3 @@
-exception LexingError of string
-exception ParseError of string
 module P = Parser
 module I = P.MenhirInterpreter
 
@@ -109,7 +107,7 @@ let pp_env ppf env =
     let fail checkpoint =
       match checkpoint with
       | I.HandlingError env ->
-          raise @@ ParseError begin
+          raise @@ Exception.Parse_error begin
             Fmt.str "@[<v>Parse Error at %s:@;Cousumed input:@;%a@]@."
               (show_curr_pos lexbuf)
               pp_env env
@@ -124,7 +122,7 @@ let main lexbuf =
     try
       loop lexbuf (P.Incremental.main lexbuf.lex_curr_p)
     with Failure s ->
-      raise @@ LexingError begin
+      raise @@ Exception.Lexing_error begin
         Print.str "@[<v>Lexing Error at %s:@;%s@]@."
           (show_curr_pos lexbuf) s
       end

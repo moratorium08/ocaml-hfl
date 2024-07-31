@@ -67,8 +67,7 @@ module Typing = struct
   module Log = (val Logs.src_log log_src)
 
   open Type
-  exception Error of string
-  let error s = raise (Error s)
+  let error s = raise (Exception.Type_error s)
 
   type tyvar = (* simple_ty + simple_argty + type variable *)
     | TvRef of int * tyvar option ref
