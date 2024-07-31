@@ -1,7 +1,5 @@
 {
 open Parser
-let line_no = ref 1
-let end_of_previousline = ref 0
 }
 
 let space = ['\t' '\n' '\r' ' ']
@@ -15,10 +13,6 @@ let ope_symbols = [ '=' '<' '>' '+' '-' '*' '&' '|' '\\' '/' '!' '%']
 rule token = parse
 | "\n"                     { Lexing.new_line lexbuf; token lexbuf }
 | space+                   { token lexbuf }
-| newline                  { end_of_previousline := Lexing.lexeme_end lexbuf
-                           ; line_no := !line_no+1
-                           ; token lexbuf
-                           }
 | "/*"                     { comment lexbuf; token lexbuf }
 | "%LTS"                   { skip_all lexbuf; token lexbuf }
 | eof                      { EOF       }
