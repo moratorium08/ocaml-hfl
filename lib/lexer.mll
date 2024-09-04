@@ -30,7 +30,7 @@ rule token = parse
 | "!" | "not"              { NOT       }
 | ("\\"|"λ")               { LAMBDA    }
 | ("=v"|"=ν")              { DEF_G     }
-| ("=m"|"=u"|=μ")          { DEF_L     }
+| ("=m"|"=u"|"=μ")         { DEF_L     }
 | "."                      { DOT       }
 | ":"                      { COLON     }
 | ";"                      { SEMICOLON }
