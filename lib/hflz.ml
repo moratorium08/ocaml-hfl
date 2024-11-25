@@ -56,12 +56,51 @@ type 'ty t =
   | Pred   of Formula.pred * Arith.t list
   [@@deriving eq,ord,show,iter,map,fold,sexp]
 
+exception CannotNegate
+(* 全体を一度にnegateすると単純なやり方でよい。 *)
+let negate_formula (formula : 'ty t) =
+  let is_negation_of f1 f2 =
+    let rec neg (f : 'ty t) : 'ty t = match f with
+      | Bool b -> Bool (not b)
+      | Or  (f1, f2) -> And (neg f1, neg f2)
+      | And (f1, f2) -> Or  (neg f1, neg f2)
+      | Forall (x, f) -> Exists (x, neg f)
+      | Exists (x, f) -> Forall (x, neg f)
+      | Pred (p, args) -> Pred (Formula.negate_pred p, args)
+      | Arith _ | Var _ | Abs _ | App _ -> raise CannotNegate in
+    try
+      (** The equality function for 'ty is irrelevant so we always return false*)
+      equal (fun _ _ -> false) (neg f1)  f2
+    with CannotNegate -> false
+  in
+  let rec go formula = match formula with
+    | Bool b -> Bool (not b)
+    | Var x  -> Var x
+    | And (Or (f1, f2), Or(f3, f4)) when is_negation_of f1 f3 ->
+      (* ifのとき *)
+      (* !((p \/ q) /\ (!p \/ r))  =  (!p /\ !q) \/ (p /\ !r)  =
+         (!p => !q) /\ (p => !r)  =  ((p \/ !q) /\ (!p \/ !r)) *)
+      (* print_endline "NEGATE IF!!!"; *)
+      And (Or (f1, go f2), Or(f3, go f4))
+    | Or  (f1, f2) -> And (go f1, go f2)
+    | And (f1, f2) -> Or  (go f1, go f2)
+    | Abs (x, f1)  -> Abs (x, go f1)
+    | App (f1, f2) -> App (go f1, go f2)
+    | Forall (x, f) -> Exists (x, go f)
+    | Exists (x, f) -> Forall (x, go f)
+    | Arith (arith) -> Arith (arith)
+    | Pred (p, args) -> Pred (Formula.negate_pred p, args) in
+  go formula
+
 type 'ty hes_rule =
   { var  : 'ty Id.t
   ; body : 'ty t
   ; fix  : Fixpoint.t
   }
   [@@deriving eq,ord,show,iter,map,fold,sexp]
+
+let negate_rule {var; body; fix} =
+  {var; body = negate_formula body; fix = Fixpoint.flip_fixpoint fix}
 
 let lookup_rule f hes =
   List.find_exn hes ~f:(fun r -> Id.eq r.var f)
@@ -142,6 +181,10 @@ let desugar ((entry, rules) : 'a Sugar.hes) : 'a hes =
   desugar_formula entry,
   List.map ~f:(fun { var; body; fix } -> { var; fix; body = desugar_formula body }) rules
 
+let dualize_hes  hes =
+  let top_formula = negate_formula @@ top_formula_of hes  in
+  let equations = List.map ~f:(fun rule -> negate_rule rule) @@ equations_of hes in
+  mk_hes top_formula equations
 
 let rec fvs = function
   | Var x          -> IdSet.singleton x

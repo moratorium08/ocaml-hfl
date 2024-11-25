@@ -127,6 +127,11 @@ val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 val t_of_sexp : (Sexplib0.Sexp.t -> 'ty) -> Sexplib0.Sexp.t -> 'ty t
 val sexp_of_t : ('ty -> Sexplib0.Sexp.t) -> 'ty t -> Sexplib0.Sexp.t
 
+(** {2 Non-derived functions} *)
+
+(** Negates a formula. Caution: The same variable is used after negation. *)
+val negate_formula : 'ty t -> 'ty t
+
 (** {1 HES} *)
 
 (** We use an equational presentation for HFL(Z) formulas.
@@ -169,6 +174,7 @@ val sexp_of_hes_rule :
 
 (** {3 Non-derived functions} *)
 
+val negate_rule : 'ty hes_rule -> 'ty hes_rule
 val lookup_rule : 'ty Id.t -> 'ty hes_rule list -> 'ty hes_rule
 
 
@@ -234,6 +240,9 @@ val desugar_formula : 'ty Sugar.t -> 'ty t
 (** Desugar "not" from a HES.
     This function may fail and raise an error because not all negations can be represented as a macro *)
 val desugar : 'ty Sugar.hes -> 'ty hes
+
+(** Dualize (i.e. takes the negation of) the hes *)
+val dualize_hes : 'ty hes -> 'ty hes
 
 (** Returns the set of free variables *)
 val fvs : 'ty t -> IdSet.t
