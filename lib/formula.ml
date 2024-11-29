@@ -10,7 +10,18 @@ type pred =
   | Ge
   | Lt
   | Gt
-  [@@deriving eq,ord,show,iter,map,fold,sexp]
+  [@@deriving eq,ord,iter,map,fold,sexp]
+
+let pp_pred ppf =
+  function
+  | Eq  -> Fmt.string ppf "="
+  | Neq -> Fmt.string ppf "/="
+  | Le  -> Fmt.string ppf "<="
+  | Ge  -> Fmt.string ppf ">="
+  | Lt  -> Fmt.string ppf "<"
+  | Gt  -> Fmt.string ppf ">"
+
+let show_pred pred = Fmt.str "%a" pp_pred pred
 
 type ('bvar, 'avar) gen_t =
   | Bool of bool

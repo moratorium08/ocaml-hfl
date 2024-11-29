@@ -99,15 +99,7 @@ let arith = arith_ Prec.zero
 
 (* Formula *)
 
-let pred ppf =
-  let open Formula in
-  function
-  | Eq  -> Fmt.string ppf "="
-  | Neq -> Fmt.string ppf "/="
-  | Le  -> Fmt.string ppf "<="
-  | Ge  -> Fmt.string ppf ">="
-  | Lt  -> Fmt.string ppf "<"
-  | Gt  -> Fmt.string ppf ">"
+let pred = Formula.pp_pred
 let pred_ = ignore_prec pred
 
 let rec gen_formula_ bvar avar prec ppf (f : ('avar, 'bvar) Formula.gen_t) =
