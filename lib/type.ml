@@ -22,7 +22,22 @@ let lift_arg x = Id.{ x with ty = TySigma x.ty }
 (* Simple Type *)
 
 type simple_ty = unit ty
-  [@@deriving eq,ord,show,sexp]
+  [@@deriving ord,show,sexp]
+
+(* We do not derive eq as the derived eq uses eq for Id.t *)
+let rec equal_simple_ty ty1 ty2 =
+  match ty1, ty2 with
+  | TyBool _, TyBool _ -> true
+  | TyArrow ({ty=ty1;_}, cod1), TyArrow({ty=ty2;_}, cod2) -> begin
+    let is_dom_eq =
+      match ty1, ty2 with
+      | TySigma ty1', TySigma ty2' -> equal_simple_ty ty1' ty2'
+      | TyInt, TyInt -> true
+      | _ -> false in
+    is_dom_eq && equal_simple_ty cod1 cod2
+  end
+  | _ -> false
+
 type simple_argty = simple_ty arg
   [@@deriving eq,ord,show,sexp]
 

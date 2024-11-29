@@ -86,7 +86,6 @@ type simple_ty = unit ty
 
 (** Derived functions *)
 
-val equal_simple_ty : simple_ty -> simple_ty -> bool
 val compare_simple_ty : simple_ty -> simple_ty -> int
 val pp_simple_ty : Format.formatter -> simple_ty -> unit
 val show_simple_ty : simple_ty -> string
@@ -106,5 +105,9 @@ val sexp_of_simple_argty : simple_argty -> Sexplib0.Sexp.t
 
 (** {2 Non-derived functions }*)
 
-val to_simple : 'annot ty -> simple_ty
+
 (** Deletes the annotations *)
+val to_simple : 'annot ty -> simple_ty
+
+(** Checks the equality. We ignore the variables; for example [x:t1 -> t2 = y:t1 -> t2] *)
+val equal_simple_ty : simple_ty -> simple_ty -> bool
