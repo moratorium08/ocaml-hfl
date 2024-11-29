@@ -73,14 +73,7 @@ let id_ = ignore_prec id
 
 (* Arith *)
 
-let op ppf =
-  let open Arith in
-  function
-    | Add  -> Fmt.string ppf "+"
-    | Sub  -> Fmt.string ppf "-"
-    | Mult -> Fmt.string ppf "*"
-    | Div  -> Fmt.string ppf "/"
-    | Mod  -> Fmt.string ppf "%"
+let op = Arith.pp_op
 let op_ = ignore_prec op
 
 let rec gen_arith_ avar_ prec ppf =

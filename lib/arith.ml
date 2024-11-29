@@ -6,7 +6,17 @@ type op =
   | Mult
   | Div
   | Mod
-  [@@deriving eq,ord,show,iter,map,fold,sexp]
+  [@@deriving eq,ord, iter,map,fold,sexp]
+
+let pp_op ppf =
+  function
+    | Add  -> Fmt.string ppf "+"
+    | Sub  -> Fmt.string ppf "-"
+    | Mult -> Fmt.string ppf "*"
+    | Div  -> Fmt.string ppf "/"
+    | Mod  -> Fmt.string ppf "%"
+
+let show_op op = Fmt.str "%a" pp_op op
 
 type 'var gen_t =
   | Int of int
