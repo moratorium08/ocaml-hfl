@@ -1,0 +1,6 @@
+(library
+ (name hfl_tests)
+ (inline_tests)
+ (libraries hfl)
+ (preprocess (pps ppx_expect))
+)

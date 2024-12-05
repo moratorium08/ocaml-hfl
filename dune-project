@@ -20,5 +20,6 @@
     menhirLib
     ppx_compare
     ppx_deriving
+   (ppx_expect :with-test)
    (ppx_sexp_conv (>= v0.16))
  ))
