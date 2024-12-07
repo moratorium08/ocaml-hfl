@@ -2,7 +2,7 @@
 open Parser
 }
 
-let space = ['\t' '\n' '\r' ' ']
+let space = ['\t' '\r' ' ']
 let newline = ['\n']
 let digit = ['0'-'9']
 let lower = ['a'-'z' '_']
@@ -11,7 +11,7 @@ let alphanum = ['0'-'9' 'a'-'z' 'A'-'Z' '_']
 let ope_symbols = [ '=' '<' '>' '+' '-' '*' '&' '|' '\\' '/' '!' '%']
 
 rule token = parse
-| "\n"                     { Lexing.new_line lexbuf; token lexbuf }
+| newline                  { Lexing.new_line lexbuf; token lexbuf }
 | space+                   { token lexbuf }
 | "/*"                     { comment lexbuf; token lexbuf }
 | "%LTS"                   { skip_all lexbuf; token lexbuf }
