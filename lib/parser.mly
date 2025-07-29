@@ -64,16 +64,19 @@ hflz:
 | abs_expr { $1 }
 
 abs_expr:
-| lambdas and_or_expr { mk_abss $1 $2 }
+| lambdas q_expr { mk_abss $1 $2 }
 
-and_or_expr:
-| and_or_expr "&&" and_or_expr  { mk_ands [$1;$3] }
-| and_or_expr "||" and_or_expr  { mk_ors  [$1;$3] }
-| "not" and_or_expr             { mk_not $2 }
-| and_or_expr "=>" and_or_expr  { mk_ors  [mk_not $1; $3] }
-| and_or_expr "<=>" and_or_expr { mk_ands [mk_ors [mk_not $1; $3]; mk_ors [mk_not $3; $1]] }
-| FORALL lvar "." and_or_expr   { mk_forall $2 $4 }
-| EXISTS lvar "." and_or_expr   { mk_exists $2 $4 }
+q_expr:
+| FORALL lvar "." q_expr { mk_forall $2 $4 }
+| EXISTS lvar "." q_expr { mk_exists $2 $4 }
+| q_free_expr            { $1 }
+
+q_free_expr:
+| q_free_expr "&&" q_free_expr  { mk_ands [$1;$3] }
+| q_free_expr "||" q_free_expr  { mk_ors  [$1;$3] }
+| "not" q_free_expr             { mk_not $2 }
+| q_free_expr "=>" q_free_expr  { mk_ors  [mk_not $1; $3] }
+| q_free_expr "<=>" q_free_expr { mk_ands [mk_ors [mk_not $1; $3]; mk_ors [mk_not $3; $1]] }
 | pred_expr                     { $1 }
 
 pred_expr:

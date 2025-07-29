@@ -80,7 +80,8 @@ let make_printer ppf =
           | I.N_atom                     -> "atom"
           | I.N_arith_expr               -> "arith_expr"
           | I.N_app_expr                 -> "app_expr"
-          | I.N_and_or_expr              -> "and_or_expr"
+          | I.N_q_expr                   -> "q_expr"
+          | I.N_q_free_expr              -> "q_free_expr"
           | I.N_abs_expr                 -> "abs_expr"
           | I.N_main                     -> "main"
         end
