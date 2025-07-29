@@ -51,6 +51,8 @@ rule token = parse
                            | ">"           -> RANGRE
                            | ("&&"|"/\\")  -> AND
                            | ("||"|"\\/")  -> OR
+                           | "=>"          -> IMPLY
+                           | "<=>"         -> IFF
                            | s -> failwith ("unknown operater " ^ s)
                            }
 

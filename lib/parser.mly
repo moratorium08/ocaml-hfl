@@ -21,12 +21,16 @@ open Raw_hflz
 %token EQ "=" NEQ "<>" LE "<=" GE ">=" /* LT "<" GT ">" */
 %token NOT "not"
 %token AND "&&" OR "||"
+%token IMPLY "=>" IFF "<=>"
 
 %token TBOOL TINT TARROW "->" SEMICOLON ";"
 
+%left  IFF
+%right IMPLY
 %right OR
 %right AND
 %nonassoc NOT
+
 %left PLUS MINUS
 %left STAR
 %nonassoc NEG
@@ -66,6 +70,8 @@ and_or_expr:
 | and_or_expr "&&" and_or_expr  { mk_ands [$1;$3] }
 | and_or_expr "||" and_or_expr  { mk_ors  [$1;$3] }
 | "not" and_or_expr             { mk_not $2 }
+| and_or_expr "=>" and_or_expr  { mk_ors  [mk_not $1; $3] }
+| and_or_expr "<=>" and_or_expr { mk_ands [mk_ors [mk_not $1; $3]; mk_ors [mk_not $3; $1]] }
 | FORALL lvar "." and_or_expr   { mk_forall $2 $4 }
 | EXISTS lvar "." and_or_expr   { mk_exists $2 $4 }
 | pred_expr                     { $1 }
