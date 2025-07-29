@@ -18,7 +18,10 @@ let list_set format_x ppf xs =
     Fmt.pf ppf "{@[%a@]}" Fmt.(list ~sep format_x) xs
 
 module Prec = struct
-  type t = int
+  type t = int [@@deriving compare]
+
+  let (<) x y = compare x y < 0
+
   let succ x = x + 1
   let succ_if b x = if b then x + 1 else x
 

@@ -34,6 +34,10 @@ module Prec :
   (** Module for operator precedence *)
 
     type t
+
+    val compare : t -> t -> int
+    val (<) : t -> t -> bool
+
     val succ : t -> t
     val succ_if : bool -> t -> t
     val zero : t
