@@ -92,6 +92,20 @@ let negate_formula (formula : 'ty t) =
     | Pred (p, args) -> Pred (Formula.negate_pred p, args) in
   go formula
 
+let rec has_forall = function
+  | Forall _ -> true
+  | Bool _ | Var _ | Arith _ | Pred _ -> false
+  | Or(phi1, phi2) | And(phi1, phi2) | App(phi1, phi2)
+    -> has_forall phi1 || has_forall phi2
+  | Abs(_, phi) | Exists(_, phi) -> has_forall phi
+
+let rec has_exist = function
+  | Exists _ -> true
+  | Bool _ | Var _ | Arith _ | Pred _ -> false
+  | Or(phi1, phi2) | And(phi1, phi2) | App(phi1, phi2)
+    -> has_exist phi1 || has_exist phi2
+  | Abs(_, phi) | Forall(_, phi) -> has_exist phi
+
 type 'ty hes_rule =
   { var  : 'ty Id.t
   ; body : 'ty t
@@ -206,3 +220,23 @@ let fpreds formula =
     let c = String.get x.Id.name 0 in
     Char.equal c @@  Char.uppercase c (* XXX ad hoc *)
   end
+
+let is_nuonly hes =
+  let phi = top_formula_of hes in
+  let rules = equations_of hes in
+  List.fold_left rules
+    ~f:(fun acc rule ->
+      acc && not (has_exist rule.body)
+          && Fixpoint.equal rule.fix Fixpoint.Greatest
+    )
+    ~init:(not @@ has_exist phi)
+
+let is_muonly hes =
+  let phi = top_formula_of hes in
+  let rules = equations_of hes in
+  List.fold_left rules
+    ~f:(fun acc rule ->
+      acc && not (has_forall rule.body)
+          && Fixpoint.equal rule.fix Fixpoint.Least
+    )
+    ~init:(not @@ has_forall phi)

@@ -249,3 +249,13 @@ val fvs : 'ty t -> IdSet.t
 
 (** Returns the set of free predicate variables *)
 val fpreds : 'ty t -> IdSet.t
+
+val has_forall : 'ty t -> bool
+
+val has_exist : 'ty t -> bool
+
+(** Checks if the hes is a nuHfl(Z) formula *)
+val is_nuonly : 'ty hes -> bool
+
+(** Checks if the hes is a muHfl(Z) formula *)
+val is_muonly : 'ty hes -> bool
