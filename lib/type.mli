@@ -41,6 +41,11 @@ val fold_ty : ('a -> 'b -> 'a) -> 'a -> 'b ty -> 'a
 val ty_of_sexp : (Sexplib0.Sexp.t -> 'annot) -> Sexplib0.Sexp.t -> 'annot ty
 val sexp_of_ty : ('annot -> Sexplib0.Sexp.t) -> 'annot ty -> Sexplib0.Sexp.t
 
+(** Non-derived functions *)
+
+ (** Returns the order of a type. The order of base types are 0 *)
+val order: 'annot ty -> int
+
 (** {m \iota} where {m \sigma} is {m \tau} (with extra annotations) *)
 type 'annot arg_ty = 'annot ty arg
 

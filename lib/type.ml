@@ -19,6 +19,16 @@ let unsafe_unlift = function
 
 let lift_arg x = Id.{ x with ty = TySigma x.ty }
 
+let rec order = function
+  | TyBool _ -> 0
+  | TyArrow({ty=arg_ty; _}, return_ty) ->
+      let order_arg =
+        match arg_ty with
+        | TyInt -> 0
+        | TySigma arg_ty -> order arg_ty
+      in
+      max (order_arg + 1) (order return_ty)
+
 (* Simple Type *)
 
 type simple_ty = unit ty

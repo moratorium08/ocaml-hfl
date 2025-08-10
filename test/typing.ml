@@ -1,5 +1,22 @@
 open Hfl
 
+let%test "order bool" =
+   Type.order (Type.TyBool()) = 0
+
+let%test "order int -> bool" =
+   let ty = Type.TyArrow ({name = "x"; id = 1; ty=TyInt}, TyBool()) in
+   Type.order ty = 1
+
+let%test "order int -> int -> bool" =
+   let ty' = Type.TyArrow ({name = "y"; id = 2; ty=TyInt}, TyBool()) in
+   let ty = Type.TyArrow ({name = "x"; id = 1; ty=TyInt}, ty') in
+   Type.order ty = 1
+
+let%test "order (int -> bool) -> bool" =
+   let ty' = Type.TyArrow ({name = "x"; id = 1; ty=TyInt}, TyBool()) in
+   let ty = Type.TyArrow ({name = "f"; id = 2; ty=TySigma ty'}, TyBool()) in
+   Type.order ty = 2
+
 (* We only have test cases for type erros since the other tests should cover
    the cases for well-typed formulas *)
 
