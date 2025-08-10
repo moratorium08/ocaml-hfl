@@ -15,7 +15,7 @@ type pred =
 let pp_pred ppf =
   function
   | Eq  -> Fmt.string ppf "="
-  | Neq -> Fmt.string ppf "/="
+  | Neq -> Fmt.string ppf "<>"
   | Le  -> Fmt.string ppf "<="
   | Ge  -> Fmt.string ppf ">="
   | Lt  -> Fmt.string ppf "<"
