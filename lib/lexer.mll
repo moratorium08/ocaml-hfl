@@ -43,6 +43,7 @@ rule token = parse
                            | "/"           -> SLASH 
                            | "%"           -> PERCENT
                            | "="           -> EQ
+                           | "/="          -> NEQ
                            | "!="          -> NEQ
                            | "<>"          -> NEQ
                            | "<="          -> LE
