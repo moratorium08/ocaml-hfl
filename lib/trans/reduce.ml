@@ -4,7 +4,10 @@ open TransUtil
 
 
 module Hflz__ = struct
-  let rec beta : 'a Hflz.t -> 'a Hflz.t = function
+  let rec beta : 'a Hflz.t -> 'a Hflz.t =
+    fun phi ->
+    let phi = Alpha.hflz phi in
+    match phi with
     | Or (phi1, phi2) -> Or (beta phi1, beta phi2)
     | And(phi1, phi2) -> And(beta phi1, beta phi2)
     | App(phi1, phi2) ->
@@ -67,6 +70,7 @@ module Hflz__ = struct
   end
   let inline : simple_ty Hflz.hes -> simple_ty Hflz.hes =
     fun hes ->
+    let hes = Alpha.hes hes in
     let main = Hflz.top_formula_of hes in
     let rules = Hflz.equations_of hes in
     let module Scc = Scc(Id.Key) in
