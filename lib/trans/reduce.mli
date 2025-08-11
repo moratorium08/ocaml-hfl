@@ -4,7 +4,7 @@ module Hflz__ :
   sig
 
     (** Beta-reduces redexes of a body formula.
-        Predicate variables are not are not unfolded by this function
+        Predicate variables are not unfolded by this function
         (and thus additional redexes won't be introduced). *)
     val beta : 'a Hflz.t -> 'a Hflz.t
 
