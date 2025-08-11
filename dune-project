@@ -2,7 +2,7 @@
 (using menhir 2.0)
 (name hfl)
 (generate_opam_files)
-(version v0.0.2)
+(version v0.0.3)
 (source (github hopv/ocaml-hfl))
 (license Apache-2.0)
 (authors "Naoki Iwayama" "Ken Sakayori")
