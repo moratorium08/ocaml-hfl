@@ -3,6 +3,7 @@
 open Base
 open Type
 
+module Alpha = Alpha
 module Subst = Subst
 module RemoveDisjunction = RemoveDisjunction
 module Preprocess = Preprocess

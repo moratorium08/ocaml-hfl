@@ -35,3 +35,19 @@ let%test "is not nuonly" =
 
 let%test "is not muonly" =
   not @@ Hflz.is_muonly hes
+
+let%expect_test "alpha" =
+  let hes = Trans.Alpha.hes hes in
+  Format.printf "%a" (Print.hflz_hes Print.simple_ty_) hes;
+  [%expect{|
+    ∀x_36931:int.FIB x_36931 (λx_35832:int.true)
+    s.t.
+    FIB : int -> (int -> bool) -> bool =μ
+      λn33:int.
+       λk_fib_2234:(int -> bool).
+        (n33 >= 2 || k_fib_2234 1)
+        && (n33 < 2
+            || FIB (n33 - 1)
+                (λx_36435:int.
+                  FIB (n33 - 2) (λx_35536:int.k_fib_2234 (x_36435 + x_35536))))
+    |}]
