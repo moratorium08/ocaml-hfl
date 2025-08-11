@@ -23,7 +23,8 @@ val fold : ('a -> 'ty -> 'b) -> 'a -> 'ty t -> 'b
 val t_of_sexp : (Sexplib0.Sexp.t -> 'ty) -> Sexplib0.Sexp.t -> 'ty t
 val sexp_of_t : ('ty -> Sexplib0.Sexp.t) -> 'ty t -> Sexplib0.Sexp.t
 
-val eq : 'a t -> 'b t -> bool
+(** Checks the equality modulo types *)
+val eq : 'ty1 t -> 'ty2 t -> bool
 
 (* TODO this should be hidden  *)
 val gen_id : unit -> int
