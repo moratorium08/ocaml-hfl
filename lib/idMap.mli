@@ -10,7 +10,7 @@ val set : 'v t -> 'ty Id.t -> 'v -> 'v t
 val find : 'v t -> 'ty Id.t -> 'v option
 val lookup : 'v t -> 'ty Id.t -> 'v
 val remove : 'v t -> 'ty Id.t -> 'v t
-val replace : 'v t -> 'v Id.t -> 'v -> 'v t
+val replace : 'v t -> 'ty Id.t -> 'v -> 'v t
 
 val of_list : ('ty Id.t * 'v) list -> 'v t
 val to_alist :
